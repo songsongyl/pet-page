@@ -308,28 +308,28 @@ function generateMockStories(count = 50) {
 
 const loadData = async () => {
   try {
-    // 使用模拟数据
-    const mockData = generateMockStories(50)
-    let filteredData = mockData
+    // 从后端API获取真实数据
+    const response = await getStoryList({
+      title: searchForm.title,
+      author: searchForm.author,
+      pageNum: pagination.current,
+      pageSize: pagination.size
+    })
 
-    // 过滤条件
-    if (searchForm.title) {
-      filteredData = filteredData.filter(item =>
-        item.title.includes(searchForm.title)
-      )
+    // 处理后端返回的数据结构
+    // 响应拦截器已经提取了 res.data，所以 response 就是 TableDataInfo 对象
+    if (response && response.rows) {
+      // 后端返回分页数据
+      tableData.value = response.rows
+      pagination.total = response.total || 0
+    } else if (Array.isArray(response)) {
+      // 后端直接返回列表
+      tableData.value = response
+      pagination.total = response.length
+    } else {
+      tableData.value = []
+      pagination.total = 0
     }
-    if (searchForm.author) {
-      filteredData = filteredData.filter(item =>
-        item.author.includes(searchForm.author)
-      )
-    }
-
-    // 分页处理
-    const start = (pagination.current - 1) * pagination.size
-    const end = start + pagination.size
-
-    tableData.value = filteredData.slice(start, end)
-    pagination.total = filteredData.length
   } catch (error) {
     ElMessage.error('获取数据失败')
   }
