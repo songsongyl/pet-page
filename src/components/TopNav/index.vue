@@ -152,7 +152,24 @@ function activeRoutes(key) {
   if(routes.length > 0) {
     permissionStore.setSidebarRouters(routes);
   } else {
-    appStore.toggleSideBarHide(true);
+    // 如果没有找到子路由，尝试从topbarRouters中查找并设置其子路由
+    const currentRoute = routers.value.find(item => item.path === key);
+    if (currentRoute && currentRoute.children && currentRoute.children.length > 0) {
+      // 处理子路由路径
+      const childRoutes = currentRoute.children.map(child => {
+        const route = { ...child };
+        if (!route.parentPath) {
+          route.parentPath = key;
+        }
+        if (!isHttp(route.path) && !route.path.startsWith('/')) {
+          route.path = key + '/' + route.path;
+        }
+        return route;
+      });
+      permissionStore.setSidebarRouters(childRoutes);
+    } else {
+      appStore.toggleSideBarHide(true);
+    }
   }
   return routes;
 }

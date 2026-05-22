@@ -9,31 +9,25 @@
           </el-button>
         </div>
       </template>
-      
-      <el-form :inline="true" :model="searchForm" class="mb-4">
+
+      <el-form :inline="true" :model="queryParams" class="mb-4">
         <el-form-item label="申请状态">
-          <el-select v-model="searchForm.status" placeholder="请选择状态">
-            <el-option label="待审批" value="0" />
-            <el-option label="已通过" value="1" />
-            <el-option label="已拒绝" value="2" />
-            <el-option label="已领养" value="3" />
-            <el-option label="已取消" value="4" />
+          <el-select v-model="queryParams.applyStatus" placeholder="请选择状态" clearable style="width: 120px">
+            <el-option label="待审核" value="0" />
+            <el-option label="审核通过" value="1" />
+            <el-option label="审核驳回" value="2" />
           </el-select>
         </el-form-item>
         <el-form-item label="申请人">
-          <el-input v-model="searchForm.applicantName" placeholder="请输入申请人姓名" />
+          <el-input v-model="queryParams.applicantName" placeholder="请输入申请人姓名" clearable style="width: 150px" />
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="handleSearch">查询</el-button>
-          <el-button @click="resetSearch">重置</el-button>
+          <el-button type="primary" @click="handleQuery">查询</el-button>
+          <el-button @click="resetQuery">重置</el-button>
         </el-form-item>
       </el-form>
-      
-      <el-table 
-        :data="tableData" 
-        style="width: 100%" 
-        @selection-change="handleSelectionChange"
-      >
+
+      <el-table :data="tableData" style="width: 100%" @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="55" />
         <el-table-column prop="applicationId" label="申请编号" width="100" />
         <el-table-column prop="applicantName" label="申请人" width="120" />
@@ -52,23 +46,17 @@
         <el-table-column label="操作" width="200" fixed="right">
           <template #default="scope">
             <el-button size="small" @click="handleView(scope.row)">查看</el-button>
-            <el-button size="small" type="primary" @click="handleApprove(scope.row)" v-if="scope.row.applyStatus === 0">审批</el-button>
+            <el-button size="small" type="primary" @click="handleApprove(scope.row)"
+              v-if="scope.row.applyStatus === 0">审批</el-button>
           </template>
         </el-table-column>
       </el-table>
-      
-      <el-pagination
-        v-model:current-page="pagination.current"
-        v-model:page-size="pagination.size"
-        :page-sizes="[10, 20, 50, 100]"
-        layout="total, sizes, prev, pager, next, jumper"
-        :total="pagination.total"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-        style="margin-top: 20px"
-      />
+
+      <el-pagination v-model:current-page="pagination.current" v-model:page-size="pagination.size"
+        :page-sizes="[10, 20, 50, 100]" layout="total, sizes, prev, pager, next, jumper" :total="pagination.total"
+        @size-change="handleSizeChange" @current-change="handleCurrentChange" style="margin-top: 20px" />
     </el-card>
-    
+
     <!-- 审批对话框 -->
     <el-dialog v-model="approveDialogVisible" title="审批领养申请" width="500px">
       <el-form :model="approveForm" :rules="approveRules" ref="approveFormRef" label-width="100px">
@@ -92,7 +80,7 @@
         </span>
       </template>
     </el-dialog>
-    
+
     <!-- 批量审批对话框 -->
     <el-dialog v-model="batchApproveDialogVisible" title="批量审批" width="500px">
       <el-form :model="batchApproveForm" :rules="batchApproveRules" ref="batchApproveFormRef" label-width="100px">
@@ -125,8 +113,8 @@ import { getAdoptionList, approveAdoption, batchApproveAdoption } from '@/api/ad
 const router = useRouter()
 const tableData = ref([])
 const selectedRows = ref([])
-const searchForm = reactive({
-  status: '0',
+const queryParams = reactive({
+  applyStatus: null,
   applicantName: ''
 })
 const pagination = reactive({
@@ -147,7 +135,24 @@ const approveForm = reactive({
 const approveRules = {
   result: [{ required: true, message: '请选择审批结果', trigger: 'change' }],
   comments: [{ required: true, message: '请输入审批意见', trigger: 'blur' }],
-  deposit: [{ required: true, message: '请输入押金金额', trigger: 'blur' }, { type: 'number', min: 0, message: '押金金额必须大于等于0', trigger: 'blur' }]
+  deposit: [
+    { 
+      validator: (rule, value, callback) => {
+        if (approveForm.result === 'approved') {
+          if (!value && value !== 0) {
+            callback(new Error('请输入押金金额'))
+          } else if (typeof value === 'number' && value < 0) {
+            callback(new Error('押金金额必须大于等于0'))
+          } else {
+            callback()
+          }
+        } else {
+          callback()
+        }
+      },
+      trigger: 'blur'
+    }
+  ]
 }
 
 const batchApproveDialogVisible = ref(false)
@@ -197,7 +202,8 @@ const getHousingTypeText = (type) => {
 const loadData = async () => {
   try {
     const response = await getAdoptionList({
-      ...searchForm,
+      applyStatus: queryParams.applyStatus,
+      applicantName: queryParams.applicantName,
       pageNum: pagination.current,
       pageSize: pagination.size
     })
@@ -210,14 +216,14 @@ const loadData = async () => {
   }
 }
 
-const handleSearch = () => {
+const handleQuery = () => {
   pagination.current = 1
   loadData()
 }
 
-const resetSearch = () => {
-  searchForm.status = '0'
-  searchForm.applicantName = ''
+const resetQuery = () => {
+  queryParams.applyStatus = null
+  queryParams.applicantName = ''
   pagination.current = 1
   loadData()
 }
@@ -336,11 +342,11 @@ onMounted(() => {
   .adoption-admin-approval {
     padding: 10px;
   }
-  
+
   .el-table {
     font-size: 12px;
   }
-  
+
   .el-table-column {
     width: auto !important;
   }

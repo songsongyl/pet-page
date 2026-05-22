@@ -160,6 +160,7 @@
 
 <script setup name="Notice">
 import { listNotice, getNotice, delNotice, addNotice, updateNotice } from "@/api/system/notice";
+import { ref, reactive, toRefs, getCurrentInstance } from 'vue';
 
 const { proxy } = getCurrentInstance();
 const { sys_notice_status, sys_notice_type } = proxy.useDict("sys_notice_status", "sys_notice_type");
@@ -281,3 +282,93 @@ function handleDelete(row) {
 
 getList();
 </script>
+
+<style scoped lang="scss">
+.app-container {
+  padding: 24px;
+  min-height: calc(100vh - 84px);
+  background: #ffffff;
+}
+
+:deep(.el-table__header th) {
+  background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%);
+  color: #333333;
+  font-weight: 600;
+}
+
+:deep(.el-table__body td) {
+  color: #333333;
+  border-bottom: 1px solid #e9ecef;
+}
+
+:deep(.el-table__row:hover td) {
+  background: rgba(0, 123, 255, 0.05) !important;
+}
+
+:deep(.el-form-item__label) {
+  color: #666666;
+}
+
+:deep(.el-input__wrapper) {
+  background: #ffffff;
+  border: 1px solid #ddd;
+  
+  &:focus-within {
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.15);
+  }
+}
+
+:deep(.el-input__inner) {
+  color: #333333;
+}
+
+:deep(.el-select .el-input__wrapper) {
+  background: #ffffff;
+  border: 1px solid #ddd;
+}
+
+:deep(.el-dialog) {
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+}
+
+:deep(.el-dialog__header) {
+  background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%);
+  border-bottom: 1px solid #e0e0e0;
+}
+
+:deep(.el-dialog__title) {
+  color: #333333;
+  font-weight: 600;
+}
+
+:deep(.el-dialog__footer) {
+  background: #f8f9fa;
+  border-top: 1px solid #e0e0e0;
+}
+
+:deep(.el-button--primary) {
+  background: linear-gradient(135deg, #007bff 0%, #6610f2 100%);
+  border: none;
+  
+  &:hover {
+    background: linear-gradient(135deg, #0069d9 0%, #550bd8 100%);
+  }
+}
+
+:deep(.el-button--success) {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  border: none;
+}
+
+:deep(.el-button--danger) {
+  background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+  border: none;
+}
+
+:deep(.el-tag) {
+  font-weight: 500;
+}
+</style>

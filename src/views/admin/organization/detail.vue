@@ -1,15 +1,17 @@
 <template>
   <div class="admin-organization-detail tech-page tech-grid-bg">
     <div class="tech-title">
-      <span class="tech-gradient-text">合作机构详情</span>
-      <span class="tech-subtitle">查看合作机构详细信息</span>
+      <!-- <span class="tech-gradient-text">合作机构详情</span> -->
+      <!-- <span class="tech-subtitle">查看合作机构详细信息</span> -->
     </div>
 
     <el-card shadow="hover" class="tech-card">
       <template #header>
         <div class="card-header">
           <span class="section-title">
-            <el-icon class="title-icon"><View /></el-icon>
+            <el-icon class="title-icon">
+              <View />
+            </el-icon>
             合作机构信息
           </span>
           <el-button @click="handleBack">返回列表</el-button>
@@ -19,39 +21,53 @@
       <div class="detail-info">
         <el-descriptions :column="2" border>
           <el-descriptions-item label="ID">
-            <span class="id-badge">#{{ organization.id }}</span>
+            <span class="id-badge">#{{ organization.orgId }}</span>
           </el-descriptions-item>
           <el-descriptions-item label="机构名称">
             <div class="org-info">
               <div class="org-avatar">
-                <el-icon><OfficeBuilding /></el-icon>
+                <el-icon>
+                  <OfficeBuilding />
+                </el-icon>
               </div>
-              <span class="org-name">{{ organization.name }}</span>
+              <span class="org-name">{{ organization.orgName }}</span>
             </div>
           </el-descriptions-item>
           <el-descriptions-item label="联系人">
             <div class="contact-info">
-              <el-icon><User /></el-icon>
+              <el-icon>
+                <User />
+              </el-icon>
               <span>{{ organization.contactPerson }}</span>
             </div>
           </el-descriptions-item>
           <el-descriptions-item label="联系电话">
             <div class="contact-info">
-              <el-icon><Phone /></el-icon>
+              <el-icon>
+                <Phone />
+              </el-icon>
               <span>{{ organization.contactPhone }}</span>
             </div>
           </el-descriptions-item>
           <el-descriptions-item label="地址">
             <div class="address-info">
-              <el-icon><Location /></el-icon>
+              <el-icon>
+                <Location />
+              </el-icon>
               <span>{{ organization.address }}</span>
             </div>
           </el-descriptions-item>
           <el-descriptions-item label="状态">
             <el-tag :type="getStatusType(organization.status)" class="status-tag" effect="dark">
-              <el-icon v-if="organization.status === 'pending'"><Clock /></el-icon>
-              <el-icon v-else-if="organization.status === 'approved'"><CircleCheck /></el-icon>
-              <el-icon v-else><CircleClose /></el-icon>
+              <el-icon v-if="organization.status === 0">
+                <Clock />
+              </el-icon>
+              <el-icon v-else-if="organization.status === 1">
+                <CircleCheck />
+              </el-icon>
+              <el-icon v-else-if="organization.status === 2">
+                <CircleClose />
+              </el-icon>
               {{ getStatusText(organization.status) }}
             </el-tag>
           </el-descriptions-item>
@@ -76,18 +92,18 @@ const organization = ref({})
 
 const getStatusType = (status) => {
   switch (status) {
-    case 'pending': return 'warning'
-    case 'approved': return 'success'
-    case 'rejected': return 'danger'
+    case 0: return 'warning'
+    case 1: return 'success'
+    case 2: return 'danger'
     default: return ''
   }
 }
 
 const getStatusText = (status) => {
   switch (status) {
-    case 'pending': return '待审核'
-    case 'approved': return '已通过'
-    case 'rejected': return '已拒绝'
+    case 0: return '待审核'
+    case 1: return '已通过'
+    case 2: return '已拒绝'
     default: return status
   }
 }

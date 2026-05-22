@@ -89,12 +89,8 @@
 
     <!-- 分类标签 -->
     <div class="category-tags">
-      <el-tag
-        v-for="cat in categories"
-        :key="cat.value"
-        :class="['category-tag', { active: searchForm.category === cat.value }]"
-        @click="selectCategory(cat.value)"
-      >
+      <el-tag v-for="cat in categories" :key="cat.value"
+        :class="['category-tag', { active: searchForm.category === cat.value }]" @click="selectCategory(cat.value)">
         <el-icon>
           <component :is="cat.icon" />
         </el-icon>
@@ -104,7 +100,7 @@
 
     <!-- 帖子卡片列表 -->
     <div class="post-cards">
-      <el-card v-for="post in tableData" :key="post.postId" shadow="hover" class="tech-card post-card" @click="handleView(post.postId)">
+      <el-card v-for="post in tableData" :key="post.postId" shadow="hover" class="tech-card post-card">
         <div class="post-header">
           <div class="post-category-tag" :class="post.category">
             <el-icon>
@@ -112,7 +108,7 @@
             </el-icon>
             {{ getCategoryText(post.category) }}
           </div>
-          <h3 class="post-title">{{ post.title }}</h3>
+          <h3 class="post-title" @click="handleView(post.postId)">{{ post.title }}</h3>
         </div>
 
         <div class="post-content">
@@ -158,6 +154,22 @@
             </span>
           </div>
         </div>
+
+        <!-- 操作按钮 -->
+        <div class="post-actions" v-if="canEdit(post) || canDelete(post)">
+          <el-button type="success" size="small" @click="handleEdit(post)" v-if="canEdit(post)">
+            <el-icon>
+              <Edit />
+            </el-icon>
+            编辑
+          </el-button>
+          <el-button type="danger" size="small" @click="handleDelete(post)" v-if="canDelete(post)">
+            <el-icon>
+              <Delete />
+            </el-icon>
+            删除
+          </el-button>
+        </div>
       </el-card>
     </div>
 
@@ -176,25 +188,19 @@
     </div>
 
     <!-- 分页 -->
-    <el-pagination
-      v-if="pagination.total > 0"
-      v-model:current-page="pagination.current"
-      v-model:page-size="pagination.size"
-      :page-sizes="[10, 20, 50, 100]"
-      layout="total, sizes, prev, pager, next, jumper"
-      :total="pagination.total"
-      @size-change="handleSizeChange"
-      @current-change="handleCurrentChange"
-      class="tech-pagination"
-    />
+    <el-pagination v-if="pagination.total > 0" v-model:current-page="pagination.current"
+      v-model:page-size="pagination.size" :page-sizes="[10, 20, 50, 100]"
+      layout="total, sizes, prev, pager, next, jumper" :total="pagination.total" @size-change="handleSizeChange"
+      @current-change="handleCurrentChange" class="tech-pagination" />
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ref, reactive, onMounted, onActivated } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { useRouter } from 'vue-router'
-import { getPostList } from '@/api/community/post'
+import { getPostList, deletePost } from '@/api/community/post'
+import useUserStore from '@/store/modules/user'
 import {
   ChatDotRound,
   Star,
@@ -208,10 +214,13 @@ import {
   Clock,
   QuestionFilled,
   ChatRound,
-  More
+  More,
+  Edit,
+  Delete
 } from '@element-plus/icons-vue'
 
 const router = useRouter()
+const userStore = useUserStore()
 const tableData = ref([])
 const searchForm = reactive({
   title: '',
@@ -220,7 +229,7 @@ const searchForm = reactive({
 })
 const pagination = reactive({
   current: 1,
-  size: 10,
+  size: 9,
   total: 0
 })
 
@@ -272,15 +281,133 @@ const removeHtmlTags = (html) => {
   return html.replace(/<[^>]*>/g, '')
 }
 
+// 帖子标题列表（按分类）
+const postTitles = {
+  experience: [
+    '新手养猫必备指南',
+    '如何训练狗狗定点大小便',
+    '猫咪疫苗接种全攻略',
+    '狗狗日常护理小贴士',
+    '宠物饮食营养搭配建议',
+    '猫咪行为解读与训练',
+    '如何给狗狗洗澡不抓狂',
+    '宠物牙齿护理的重要性',
+    '猫咪应激反应处理方法',
+    '狗狗社会化训练技巧'
+  ],
+  help: [
+    '猫咪突然不吃东西怎么办？',
+    '狗狗频繁呕吐寻求帮助',
+    '求助：猫咪一直叫个不停',
+    '家里宠物打架怎么办？',
+    '猫咪乱尿问题求解决',
+    '狗狗分离焦虑症怎么治？',
+    '求助：宠物误食异物',
+    '猫咪掉毛严重怎么办',
+    '狗狗皮肤病求助',
+    '如何让宠物适应新环境'
+  ],
+  fun: [
+    '我家猫咪的奇葩睡姿',
+    '狗狗拆家后的搞笑反应',
+    '猫咪追激光笔的傻样',
+    '宠物表情包合集',
+    '狗狗第一次见到雪的反应',
+    '猫咪偷吃东西被抓包',
+    '宠物之间的搞笑互动',
+    '我家狗成精了系列',
+    '猫咪的迷惑行为大赏',
+    '宠物搞笑视频合集'
+  ],
+  other: [
+    '宠物用品好物推荐',
+    '宠物医院选择指南',
+    '带宠物旅行注意事项',
+    '宠物保险购买建议',
+    '宠物摄影技巧分享',
+    '宠物名字灵感大全',
+    '宠物美容DIY教程',
+    '宠物友好餐厅推荐',
+    '宠物寄养经验分享',
+    '宠物训练工具测评'
+  ]
+}
+
+// 帖子内容模板
+const postContents = [
+  '今天想和大家分享一下我的养宠经验...',
+  '最近遇到了一个问题，想请教一下各位铲屎官...',
+  '哈哈，我家主子今天又做了一件蠢事...',
+  '给大家推荐一些好用的宠物用品...',
+  '分享一下我和我家宠物的日常...',
+  '有谁知道这个情况该怎么办吗？求助！',
+  '太搞笑了，必须分享给大家看看...',
+  '经过一段时间的摸索，总结出一些经验...',
+  '我家宠物的这个习惯真的让我又爱又恨...',
+  '最近发现了一个不错的宠物产品，推荐给大家...'
+]
+
+// 作者列表
+const authors = ['爱猫达人', '铲屎官小明', '宠物爱好者', '狗奴一枚', '猫咪控', '宠物博主', '养宠新手', '资深铲屎官']
+
+// 生成模拟帖子数据
+function generateMockPosts(count = 60) {
+  const posts = []
+  const now = new Date()
+  const categories = ['experience', 'help', 'fun', 'other']
+  
+  for (let i = 1; i <= count; i++) {
+    const category = categories[Math.floor(Math.random() * categories.length)]
+    const titleList = postTitles[category]
+    const title = titleList[Math.floor(Math.random() * titleList.length)]
+    const createTime = new Date(now.getTime() - Math.random() * 30 * 24 * 60 * 60 * 1000) // 最近30天内
+    
+    posts.push({
+      postId: i,
+      title: title,
+      content: postContents[Math.floor(Math.random() * postContents.length)],
+      category: category,
+      author: authors[Math.floor(Math.random() * authors.length)],
+      authorId: Math.floor(Math.random() * 100) + 1,
+      createTime: createTime.toISOString().replace('T', ' ').substring(0, 19),
+      commentCount: Math.floor(Math.random() * 80),
+      likeCount: Math.floor(Math.random() * 150),
+      collectCount: Math.floor(Math.random() * 60)
+    })
+  }
+  
+  return posts
+}
+
 const loadData = async () => {
   try {
-    const response = await getPostList({
-      ...searchForm,
-      pageNum: pagination.current,
-      pageSize: pagination.size
-    })
-    tableData.value = response.rows
-    pagination.total = response.total
+    // 使用模拟数据
+    const mockData = generateMockPosts(60)
+    let filteredData = mockData
+    
+    // 过滤条件
+    if (searchForm.title) {
+      filteredData = filteredData.filter(item => 
+        item.title.includes(searchForm.title)
+      )
+    }
+    if (searchForm.author) {
+      filteredData = filteredData.filter(item => 
+        item.author.includes(searchForm.author)
+      )
+    }
+    if (searchForm.category) {
+      filteredData = filteredData.filter(item => 
+        item.category === searchForm.category
+      )
+    }
+    
+    // 分页处理
+    const start = (pagination.current - 1) * pagination.size
+    const end = start + pagination.size
+    
+    tableData.value = filteredData.slice(start, end)
+    pagination.total = filteredData.length
   } catch (error) {
     ElMessage.error('获取数据失败')
   }
@@ -317,7 +444,53 @@ const handleView = (id) => {
   router.push(`/community/post/detail/${id}`)
 }
 
+// 判断是否可以编辑（管理员或作者本人）
+const canEdit = (post) => {
+  return userStore.roleId === 1 || post.authorId === userStore.id
+}
+
+// 判断是否可以删除（管理员或作者本人）
+const canDelete = (post) => {
+  return userStore.roleId === 1 || post.authorId === userStore.id
+}
+
+// 编辑帖子
+const handleEdit = (post) => {
+  router.push({
+    path: '/community/post/publish',
+    query: { id: post.postId }
+  })
+}
+
+// 删除帖子
+const handleDelete = (post) => {
+  ElMessageBox.confirm(
+    `确定要删除帖子"${post.title}"吗？此操作不可恢复。`,
+    '删除确认',
+    {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }
+  ).then(async () => {
+    try {
+      await deletePost(post.postId)
+      ElMessage.success('删除成功')
+      loadData()
+    } catch (error) {
+      ElMessage.error('删除失败')
+    }
+  }).catch(() => {
+    // 用户取消删除
+  })
+}
+
 onMounted(() => {
+  loadData()
+})
+
+// 组件被激活时刷新列表数据（keep-alive缓存时使用）
+onActivated(() => {
   loadData()
 })
 </script>
@@ -386,6 +559,7 @@ onMounted(() => {
 }
 
 .search-form {
+
   .tech-input,
   .tech-select {
     :deep(.el-input__wrapper) {
@@ -588,6 +762,40 @@ onMounted(() => {
         .el-icon {
           font-size: 16px;
           color: var(--tech-primary);
+        }
+      }
+    }
+  }
+
+  .post-actions {
+    display: flex;
+    gap: 12px;
+    padding-top: 16px;
+    border-top: 1px solid var(--tech-border);
+    margin-top: 16px;
+
+    .el-button {
+      flex: 1;
+      border-radius: 6px;
+      font-weight: 500;
+
+      &.el-button--success {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        border: none;
+
+        &:hover {
+          background: linear-gradient(135deg, #0ea571 0%, #048554 100%);
+          box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+      }
+
+      &.el-button--danger {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        border: none;
+
+        &:hover {
+          background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+          box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
         }
       }
     }

@@ -1,21 +1,39 @@
 <template>
   <div class="admin-volunteer tech-page tech-grid-bg">
     <div class="tech-title">
-      <span class="tech-gradient-text">志愿者管理</span>
-      <span class="tech-subtitle">管理志愿者信息，审核志愿者申请</span>
+      <!-- <span class="tech-gradient-text">志愿者管理</span> -->
+      <!-- <span class="tech-subtitle">管理志愿者信息，审核志愿者申请</span> -->
     </div>
 
     <el-card shadow="hover" class="tech-card">
       <template #header>
         <div class="card-header">
           <span class="section-title">
-            <el-icon class="title-icon"><User /></el-icon>
+            <el-icon class="title-icon">
+              <User />
+            </el-icon>
             志愿者列表
           </span>
-          <el-button type="primary" class="tech-btn" @click="handleAdd">
-            <el-icon><Plus /></el-icon>
-            添加志愿者
-          </el-button>
+          <div class="header-buttons">
+            <el-button type="primary" class="tech-btn" @click="handleAdd">
+              <el-icon>
+                <Plus />
+              </el-icon>
+              添加志愿者
+            </el-button>
+            <el-button type="warning" class="tech-btn" @click="handleBatchEdit" :disabled="!selectedRows.length">
+              <el-icon>
+                <Edit />
+              </el-icon>
+              编辑
+            </el-button>
+            <el-button type="danger" class="tech-btn" @click="handleBatchDelete" :disabled="!selectedRows.length">
+              <el-icon>
+                <Delete />
+              </el-icon>
+              删除
+            </el-button>
+          </div>
         </div>
       </template>
 
@@ -23,34 +41,46 @@
         <el-form-item label="姓名">
           <el-input v-model="searchForm.name" placeholder="请输入志愿者姓名" class="tech-input">
             <template #prefix>
-              <el-icon><User /></el-icon>
+              <el-icon>
+                <User />
+              </el-icon>
             </template>
           </el-input>
         </el-form-item>
         <el-form-item label="状态">
           <el-select v-model="searchForm.status" placeholder="请选择状态" class="tech-select">
             <el-option label="全部状态" value="" />
-            <el-option label="待审核" value="pending">
-              <el-icon class="option-icon"><Clock /></el-icon>
+            <el-option label="待审核" :value="0">
+              <el-icon class="option-icon">
+                <Clock />
+              </el-icon>
               待审核
             </el-option>
-            <el-option label="已通过" value="approved">
-              <el-icon class="option-icon"><CircleCheck /></el-icon>
+            <el-option label="已通过" :value="1">
+              <el-icon class="option-icon">
+                <CircleCheck />
+              </el-icon>
               已通过
             </el-option>
-            <el-option label="已拒绝" value="rejected">
-              <el-icon class="option-icon"><CircleClose /></el-icon>
+            <el-option label="已拒绝" :value="2">
+              <el-icon class="option-icon">
+                <CircleClose />
+              </el-icon>
               已拒绝
             </el-option>
           </el-select>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" class="tech-btn search-btn" @click="handleSearch">
-            <el-icon><Search /></el-icon>
+            <el-icon>
+              <Search />
+            </el-icon>
             查询
           </el-button>
           <el-button class="reset-btn" @click="resetSearch">
-            <el-icon><RefreshRight /></el-icon>
+            <el-icon>
+              <RefreshRight />
+            </el-icon>
             重置
           </el-button>
         </el-form-item>
@@ -60,7 +90,9 @@
       <div class="stats-row">
         <div class="stat-card">
           <div class="stat-icon pending">
-            <el-icon><Clock /></el-icon>
+            <el-icon>
+              <Clock />
+            </el-icon>
           </div>
           <div class="stat-info">
             <div class="stat-value">{{ stats.pendingCount || 0 }}</div>
@@ -69,7 +101,9 @@
         </div>
         <div class="stat-card">
           <div class="stat-icon approved">
-            <el-icon><CircleCheck /></el-icon>
+            <el-icon>
+              <CircleCheck />
+            </el-icon>
           </div>
           <div class="stat-info">
             <div class="stat-value">{{ stats.approvedCount || 0 }}</div>
@@ -78,7 +112,9 @@
         </div>
         <div class="stat-card">
           <div class="stat-icon total">
-            <el-icon><User /></el-icon>
+            <el-icon>
+              <User />
+            </el-icon>
           </div>
           <div class="stat-info">
             <div class="stat-value">{{ stats.totalCount || 0 }}</div>
@@ -87,17 +123,21 @@
         </div>
       </div>
 
-      <el-table :data="tableData" style="width: 100%" class="tech-table" v-loading="loading">
-        <el-table-column prop="id" label="ID" width="80" align="center">
+      <el-table :data="tableData" style="width: 100%" class="tech-table" v-loading="loading"
+        @selection-change="handleSelectionChange">
+        <el-table-column type="selection" width="55" align="center" />
+        <el-table-column prop="volunteerId" label="ID" width="80" align="center">
           <template #default="scope">
-            <span class="id-badge">#{{ scope.row.id }}</span>
+            <span class="id-badge">#{{ scope.row.volunteerId }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="name" label="姓名" width="120">
           <template #default="scope">
             <div class="user-info">
               <el-avatar :size="32" class="user-avatar">
-                <el-icon><UserFilled /></el-icon>
+                <el-icon>
+                  <UserFilled />
+                </el-icon>
               </el-avatar>
               <span class="user-name">{{ scope.row.name }}</span>
             </div>
@@ -116,9 +156,15 @@
         <el-table-column prop="status" label="状态" width="100" align="center">
           <template #default="scope">
             <el-tag :type="getStatusType(scope.row.status)" class="status-tag" effect="dark">
-              <el-icon v-if="scope.row.status === 'pending'"><Clock /></el-icon>
-              <el-icon v-else-if="scope.row.status === 'approved'"><CircleCheck /></el-icon>
-              <el-icon v-else><CircleClose /></el-icon>
+              <el-icon v-if="scope.row.status === 0">
+                <Clock />
+              </el-icon>
+              <el-icon v-else-if="scope.row.status === 1">
+                <CircleCheck />
+              </el-icon>
+              <el-icon v-else>
+                <CircleClose />
+              </el-icon>
               {{ getStatusText(scope.row.status) }}
             </el-tag>
           </template>
@@ -126,59 +172,50 @@
         <el-table-column prop="createTime" label="申请时间" width="180">
           <template #default="scope">
             <div class="time-info">
-              <el-icon><Calendar /></el-icon>
+              <el-icon>
+                <Calendar />
+              </el-icon>
               {{ scope.row.createTime }}
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="280" fixed="right">
+        <el-table-column label="操作" width="180" fixed="right">
           <template #default="scope">
             <div class="action-btns">
-              <el-button size="small" class="action-btn view-btn" @click="handleView(scope.row.id)">
-                <el-icon><View /></el-icon>
+              <el-button size="small" class="action-btn view-btn" @click="handleView(scope.row.volunteerId)"
+                v-if="scope.row.status !== 0">
+                <el-icon>
+                  <View />
+                </el-icon>
                 查看
               </el-button>
-              <el-button
-                v-if="scope.row.status === 'pending'"
-                size="small"
-                type="primary"
-                class="action-btn approve-btn"
-                @click="handleApprove(scope.row.id)"
-              >
-                <el-icon><Check /></el-icon>
+              <el-button v-if="scope.row.status === 0" size="small" type="primary" class="action-btn approve-btn"
+                @click="handleApprove(scope.row.volunteerId)">
+                <el-icon>
+                  <Check />
+                </el-icon>
                 审核
-              </el-button>
-              <el-button size="small" type="warning" class="action-btn edit-btn" @click="handleEdit(scope.row.id)">
-                <el-icon><Edit /></el-icon>
-                编辑
-              </el-button>
-              <el-button size="small" type="danger" class="action-btn delete-btn" @click="handleDelete(scope.row.id)">
-                <el-icon><Delete /></el-icon>
-                删除
               </el-button>
             </div>
           </template>
         </el-table-column>
       </el-table>
 
-      <el-pagination
-        v-if="pagination.total > 0"
-        v-model:current-page="pagination.current"
-        v-model:page-size="pagination.size"
-        :page-sizes="[10, 20, 50, 100]"
-        layout="total, sizes, prev, pager, next, jumper"
-        :total="pagination.total"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-        class="tech-pagination"
-      />
+      <el-pagination v-if="pagination.total > 0" v-model:current-page="pagination.current"
+        v-model:page-size="pagination.size" :page-sizes="[10, 20, 50, 100]"
+        layout="total, sizes, prev, pager, next, jumper" :total="pagination.total" @size-change="handleSizeChange"
+        @current-change="handleCurrentChange" class="tech-pagination" />
 
       <!-- 空状态 -->
       <div v-if="tableData.length === 0 && !loading" class="empty-state">
-        <el-icon class="empty-icon"><User /></el-icon>
+        <el-icon class="empty-icon">
+          <User />
+        </el-icon>
         <p>暂无志愿者数据</p>
         <el-button type="primary" class="tech-btn" @click="handleAdd">
-          <el-icon><Plus /></el-icon>
+          <el-icon>
+            <Plus />
+          </el-icon>
           添加志愿者
         </el-button>
       </div>
@@ -190,24 +227,23 @@
         <el-form :model="approveForm" :rules="approveRules" ref="approveFormRef" label-width="100px">
           <el-form-item label="审核结果" prop="result">
             <el-radio-group v-model="approveForm.result" class="approve-radio-group">
-              <el-radio label="approved" class="approve-radio">
-                <el-icon class="radio-icon success"><CircleCheck /></el-icon>
+              <el-radio :label="1" class="approve-radio">
+                <el-icon class="radio-icon success">
+                  <CircleCheck />
+                </el-icon>
                 <span>通过</span>
               </el-radio>
-              <el-radio label="rejected" class="approve-radio">
-                <el-icon class="radio-icon danger"><CircleClose /></el-icon>
+              <el-radio :label="2" class="approve-radio">
+                <el-icon class="radio-icon danger">
+                  <CircleClose />
+                </el-icon>
                 <span>拒绝</span>
               </el-radio>
             </el-radio-group>
           </el-form-item>
           <el-form-item label="审核意见" prop="comments">
-            <el-input
-              type="textarea"
-              v-model="approveForm.comments"
-              placeholder="请输入审核意见"
-              :rows="4"
-              class="tech-textarea"
-            />
+            <el-input type="textarea" v-model="approveForm.comments" placeholder="请输入审核意见" :rows="4"
+              class="tech-textarea" />
           </el-form-item>
         </el-form>
       </div>
@@ -215,7 +251,9 @@
         <div class="dialog-footer">
           <el-button @click="approveDialogVisible = false" class="cancel-btn">取消</el-button>
           <el-button type="primary" class="tech-btn" @click="submitApprove">
-            <el-icon><Check /></el-icon>
+            <el-icon>
+              <Check />
+            </el-icon>
             提交审核
           </el-button>
         </div>
@@ -225,9 +263,9 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { getVolunteerList, approveVolunteer, deleteVolunteer, getVolunteerStats } from '@/api/admin/volunteer'
 import {
   User, Plus, Search, RefreshRight, Clock, CircleCheck, CircleClose,
@@ -235,6 +273,7 @@ import {
 } from '@element-plus/icons-vue'
 
 const router = useRouter()
+const route = useRoute()
 const tableData = ref([])
 const loading = ref(false)
 const stats = ref({})
@@ -247,7 +286,7 @@ const pagination = reactive({
   size: 10,
   total: 0
 })
-
+const selectedRows = ref([])
 const approveDialogVisible = ref(false)
 const approveFormRef = ref()
 const currentApproveId = ref()
@@ -263,29 +302,26 @@ const approveRules = {
 
 const getStatusType = (status) => {
   switch (status) {
-    case 'pending': return 'warning'
-    case 'approved': return 'success'
-    case 'rejected': return 'danger'
+    case 0: return 'warning'
+    case 1: return 'success'
+    case 2: return 'danger'
     default: return ''
   }
 }
 
 const getStatusText = (status) => {
   switch (status) {
-    case 'pending': return '待审核'
-    case 'approved': return '已通过'
-    case 'rejected': return '已拒绝'
+    case 0: return '待审核'
+    case 1: return '已通过'
+    case 2: return '已拒绝'
     default: return status
   }
 }
 
-const loadStats = async () => {
-  try {
-    const response = await getVolunteerStats()
-    stats.value = response.data || {}
-  } catch (error) {
-    console.error('获取统计数据失败', error)
-  }
+const updateStats = () => {
+  stats.value.pendingCount = tableData.value.filter(item => item.status === 0).length
+  stats.value.approvedCount = tableData.value.filter(item => item.status === 1).length
+  stats.value.totalCount = tableData.value.length
 }
 
 const loadData = async () => {
@@ -298,6 +334,8 @@ const loadData = async () => {
     })
     tableData.value = response.rows
     pagination.total = response.total
+    // 根据表格数据计算统计数据
+    updateStats()
   } catch (error) {
     ElMessage.error('获取数据失败')
   } finally {
@@ -327,6 +365,45 @@ const handleCurrentChange = (current) => {
   loadData()
 }
 
+const handleSelectionChange = (val) => {
+  selectedRows.value = val
+}
+
+const handleBatchEdit = () => {
+  if (selectedRows.value.length !== 1) {
+    ElMessage.warning('请选择一条数据进行编辑')
+    return
+  }
+  const row = selectedRows.value[0]
+  handleEdit(row.volunteerId)
+}
+
+const handleBatchDelete = async () => {
+  if (selectedRows.value.length === 0) {
+    ElMessage.warning('请选择要删除的数据')
+    return
+  }
+  try {
+    await ElMessageBox.confirm(`确定要删除选中的 ${selectedRows.value.length} 条数据吗？`, '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+    const ids = selectedRows.value.map(row => row.volunteerId)
+    for (const id of ids) {
+      await deleteVolunteer(id)
+    }
+    ElMessage.success('删除成功')
+    loadData()
+    updateStats()
+    selectedRows.value = []
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error('删除失败')
+    }
+  }
+}
+
 const handleAdd = () => {
   router.push('/admin/volunteer/add')
 }
@@ -351,11 +428,16 @@ const submitApprove = async () => {
   await approveFormRef.value.validate(async (valid) => {
     if (valid) {
       try {
-        await approveVolunteer(currentApproveId.value, approveForm)
+        // 转换审核结果格式，确保后端能正确处理
+        const approveData = {
+          status: approveForm.result,
+          comments: approveForm.comments
+        }
+        await approveVolunteer(currentApproveId.value, approveData)
         ElMessage.success('审核成功')
         approveDialogVisible.value = false
         loadData()
-        loadStats()
+        updateStats()
       } catch (error) {
         ElMessage.error('审核失败')
       }
@@ -383,13 +465,19 @@ const handleDelete = async (id) => {
 
 onMounted(() => {
   loadData()
-  loadStats()
+  updateStats()
 })
 </script>
 
 <style scoped>
 .admin-volunteer {
   padding: 20px;
+}
+
+/* 头部按钮 */
+.header-buttons {
+  display: flex;
+  gap: 10px;
 }
 
 .card-header {

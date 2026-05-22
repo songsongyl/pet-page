@@ -26,6 +26,15 @@ export function getStoryDetail(id) {
   })
 }
 
+// 更新故事
+export function updateStory(data) {
+  return request({
+    url: '/story',
+    method: 'put',
+    data
+  })
+}
+
 // 点赞故事
 export function likeStory(id) {
   return request({
@@ -57,5 +66,13 @@ export function deleteStory(id) {
   return request({
     url: `/story/${id}`,
     method: 'delete'
+  })
+}
+
+// 更新故事浏览次数
+export function addStoryViewCount(id) {
+  return request({
+    url: `/story/${id}/view`,
+    method: 'put'
   })
 }

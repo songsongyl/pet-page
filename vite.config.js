@@ -36,6 +36,14 @@ export default defineConfig(({ mode, command }) => {
           changeOrigin: true,
           rewrite: (p) => p.replace(/^\/dev-api/, '')
         },
+        '/common': {
+          target: 'http://localhost:8080',
+          changeOrigin: true
+        },
+        '/captchaImage': {
+          target: 'http://localhost:8080',
+          changeOrigin: true
+        },
         '/api/ai': {
           target: 'https://open.bigmodel.cn',
           changeOrigin: true,

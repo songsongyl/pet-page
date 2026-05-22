@@ -140,7 +140,7 @@
    </div>
 </template>
 
-<script setup name="Dept">
+<script setup name="Organization">
 import { listDept, getDept, delDept, addDept, updateDept, listDeptExcludeChild } from "@/api/system/dept";
 
 const { proxy } = getCurrentInstance();

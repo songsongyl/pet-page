@@ -1,0 +1,102 @@
+1. 爱心送养记，非admin用户只能看到提交申请tab项
+2. 点滴捐爱，非admin用户只能看到提交捐赠tab项
+3. 知识课堂，非admin用户只能查看，不能修改和上传，删除知识
+4. 志愿者管理和合作机构管理，非admin用户不能看到这个tab项
+5. 流浪宝贝救助站，非admin用户只能查看，能增加，修改删除自己创作的数据，不能删除其他用户的数据，不能审批
+6. 投诉举报管理，非admin用户只能查看，能增加，或删除自己创作的数据，不能删除其他用户的数据，不能审批
+7. 公告信息，非admin用户只能查看，不能修改和删除
+
+
+getInfo接口返回的字段是：
+{
+    "msg": "操作成功",
+    "code": 200,
+    "permissions": [
+        "*:*:*"
+    ],
+    "roles": [
+        "admin"
+    ],
+    "isDefaultModifyPwd": false,
+    "isPasswordExpired": false,
+    "user": {
+        "createBy": "admin",
+        "createTime": "2025-12-20 13:53:18",
+        "updateBy": null,
+        "updateTime": null,
+        "remark": "管理员",
+        "params": {
+            "@type": "java.util.HashMap"
+        },
+        "userId": 1,
+        "deptId": 103,
+        "userName": "admin",
+        "nickName": "admin",
+        "email": "ry@163.com",
+        "phonenumber": "15888888888",
+        "sex": "1",
+        "avatar": "/profile/avatar/2026/04/22/c9092ebd66364993b00b8f3afe95ec7d.jpg",
+        "status": "0",
+        "delFlag": "0",
+        "loginIp": "127.0.0.1",
+        "loginDate": "2026-04-28T12:54:05.000+08:00",
+        "pwdUpdateDate": "2026-04-22T14:58:07.000+08:00",
+        "dept": {
+            "createBy": null,
+            "createTime": null,
+            "updateBy": null,
+            "updateTime": null,
+            "remark": null,
+            "params": {
+                "@type": "java.util.HashMap"
+            },
+            "deptId": 103,
+            "parentId": 101,
+            "ancestors": "0,100,101",
+            "deptName": "研发部门",
+            "orderNum": 1,
+            "leader": "若依",
+            "phone": null,
+            "email": null,
+            "status": "0",
+            "delFlag": null,
+            "parentName": null,
+            "children": []
+        },
+        "roles": [
+            {
+                "createBy": null,
+                "createTime": null,
+                "updateBy": null,
+                "updateTime": null,
+                "remark": null,
+                "params": {
+                    "@type": "java.util.HashMap"
+                },
+                "roleId": 1,
+                "roleName": "超级管理员",
+                "roleKey": "admin",
+                "roleSort": 1,
+                "dataScope": "1",
+                "menuCheckStrictly": false,
+                "deptCheckStrictly": false,
+                "status": "0",
+                "delFlag": null,
+                "flag": false,
+                "menuIds": null,
+                "deptIds": null,
+                "permissions": null,
+                "admin": true
+            }
+        ],
+        "roleIds": null,
+        "postIds": null,
+        "roleId": null,
+        "admin": true
+    }
+}
+上述的权限管理依据 "roles": [
+        "admin"
+    ]来判断
+
+故事详情页面，宠物页面

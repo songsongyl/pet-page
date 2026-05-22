@@ -9,7 +9,9 @@
       <template #header>
         <div class="card-header">
           <span class="section-title">
-            <el-icon class="title-icon"><Search /></el-icon>
+            <el-icon class="title-icon">
+              <Search />
+            </el-icon>
             搜索条件
           </span>
         </div>
@@ -18,58 +20,45 @@
         <el-row :gutter="20">
           <el-col :xs="24" :sm="12" :md="8" :lg="6">
             <el-form-item label="投诉ID" prop="complaintId">
-              <el-input
-                v-model="queryParams.complaintId"
-                placeholder="请输入投诉ID"
-                clearable
-                @keyup.enter="handleQuery"
-                class="tech-input"
-              >
-                <template #prefix><el-icon><Document /></el-icon></template>
+              <el-input v-model="queryParams.complaintId" placeholder="请输入投诉ID" clearable @keyup.enter="handleQuery"
+                class="tech-input">
+                <template #prefix><el-icon>
+                    <Document />
+                  </el-icon></template>
               </el-input>
             </el-form-item>
           </el-col>
           <el-col :xs="24" :sm="12" :md="8" :lg="6">
             <el-form-item label="举报人ID" prop="reportUserId">
-              <el-input
-                v-model="queryParams.reportUserId"
-                placeholder="请输入举报人ID"
-                clearable
-                @keyup.enter="handleQuery"
-                class="tech-input"
-              >
-                <template #prefix><el-icon><User /></el-icon></template>
+              <el-input v-model="queryParams.reportUserId" placeholder="请输入举报人ID" clearable @keyup.enter="handleQuery"
+                class="tech-input">
+                <template #prefix><el-icon>
+                    <User />
+                  </el-icon></template>
               </el-input>
             </el-form-item>
           </el-col>
           <el-col :xs="24" :sm="12" :md="8" :lg="6">
             <el-form-item label="处理状态" prop="handleStatus">
               <el-select v-model="queryParams.handleStatus" placeholder="请选择处理状态" clearable class="tech-select">
-                <el-option
-                  v-for="dict in dansjd"
-                  :key="dict.value"
-                  :label="dict.label"
-                  :value="dict.value"
-                />
+                <el-option v-for="dict in dansjd" :key="dict.value" :label="dict.label" :value="dict.value" />
               </el-select>
             </el-form-item>
           </el-col>
           <el-col :xs="24" :sm="12" :md="8" :lg="6">
             <el-form-item label="处理人ID" prop="handleUserId">
-              <el-input
-                v-model="queryParams.handleUserId"
-                placeholder="请输入处理人ID"
-                clearable
-                @keyup.enter="handleQuery"
-                class="tech-input"
-              >
-                <template #prefix><el-icon><UserFilled /></el-icon></template>
+              <el-input v-model="queryParams.handleUserId" placeholder="请输入处理人ID" clearable @keyup.enter="handleQuery"
+                class="tech-input">
+                <template #prefix><el-icon>
+                    <UserFilled />
+                  </el-icon></template>
               </el-input>
             </el-form-item>
           </el-col>
           <el-col :xs="24" :sm="24" :md="16" :lg="12">
             <el-form-item>
-              <el-button type="primary" icon="Search" @click="handleQuery" class="tech-btn tech-btn-primary">搜索</el-button>
+              <el-button type="primary" icon="Search" @click="handleQuery"
+                class="tech-btn tech-btn-primary">搜索</el-button>
               <el-button icon="Refresh" @click="resetQuery" class="tech-btn">重置</el-button>
             </el-form-item>
           </el-col>
@@ -81,21 +70,24 @@
       <template #header>
         <div class="card-header">
           <span class="section-title">
-            <el-icon class="title-icon"><Warning /></el-icon>
+            <el-icon class="title-icon">
+              <Warning />
+            </el-icon>
             投诉举报处理列表
           </span>
           <right-toolbar v-model:showSearch="showSearch" @queryTable="getList"></right-toolbar>
         </div>
       </template>
 
-      <el-table v-loading="loading" :data="complaintList" @selection-change="handleSelectionChange" class="tech-table" stripe>
+      <el-table v-loading="loading" :data="complaintList" @selection-change="handleSelectionChange" class="tech-table"
+        stripe>
         <el-table-column type="selection" width="55" align="center" />
         <el-table-column label="ID" align="center" prop="complaintId" width="80" />
         <el-table-column label="举报人ID" align="center" prop="reportUserId" width="100" />
         <el-table-column label="举报对象类型" align="center" prop="targetType" width="120">
           <template #default="scope">
             <el-tag :type="getTargetTypeColor(scope.row.targetType)" effect="dark" size="small">
-              <dict-tag :options="tsjb" :value="scope.row.targetType"/>
+              <dict-tag :options="tsjb" :value="scope.row.targetType" />
             </el-tag>
           </template>
         </el-table-column>
@@ -103,7 +95,7 @@
         <el-table-column label="投诉类型" align="center" prop="complaintType" width="120">
           <template #default="scope">
             <el-tag :type="getComplaintTypeColor(scope.row.complaintType)" effect="dark" size="small">
-              <dict-tag :options="afds" :value="scope.row.complaintType"/>
+              <dict-tag :options="afds" :value="scope.row.complaintType" />
             </el-tag>
           </template>
         </el-table-column>
@@ -115,7 +107,7 @@
         <el-table-column label="处理状态" align="center" prop="handleStatus" width="100">
           <template #default="scope">
             <el-tag :type="getHandleStatusColor(scope.row.handleStatus)" effect="dark" size="small">
-              <dict-tag :options="dansjd" :value="scope.row.handleStatus"/>
+              <dict-tag :options="dansjd" :value="scope.row.handleStatus" />
             </el-tag>
           </template>
         </el-table-column>
@@ -123,7 +115,7 @@
         <el-table-column label="处理结果" align="center" prop="handleRemark" min-width="150" show-overflow-tooltip />
         <el-table-column label="处理时间" align="center" prop="handleTime" width="160">
           <template #default="scope">
-            <span class="time-text">{{ parseTime(scope.row.handleTime, '{y}-{m}-{d} {h}:{i}') }}</span>
+            <span class="time-text">{{ parseTime(scope.row.handleTime, '{y}-{m}-{d}') }}</span>
           </template>
         </el-table-column>
         <el-table-column label="操作" align="center" class-name="small-padding fixed-width" width="120" fixed="right">
@@ -132,14 +124,9 @@
           </template>
         </el-table-column>
       </el-table>
-      
-      <pagination
-        v-show="total>0"
-        :total="total"
-        v-model:page="queryParams.pageNum"
-        v-model:limit="queryParams.pageSize"
-        @pagination="getList"
-      />
+
+      <pagination v-show="total > 0" :total="total" v-model:page="queryParams.pageNum"
+        v-model:limit="queryParams.pageSize" @pagination="getList" />
     </el-card>
 
     <el-dialog :title="title" v-model="open" width="700px" append-to-body class="tech-dialog">
@@ -152,18 +139,14 @@
           </el-col>
           <el-col :span="24">
             <el-form-item label="投诉内容" prop="complaintContent">
-              <el-input v-model="form.complaintContent" type="textarea" placeholder="投诉内容" disabled class="tech-textarea" />
+              <el-input v-model="form.complaintContent" type="textarea" placeholder="投诉内容" disabled
+                class="tech-textarea" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item label="处理状态" prop="handleStatus">
               <el-select v-model="form.handleStatus" placeholder="请选择处理状态" class="tech-select">
-                <el-option
-                  v-for="dict in dansjd"
-                  :key="dict.value"
-                  :label="dict.label"
-                  :value="dict.value"
-                ></el-option>
+                <el-option v-for="dict in dansjd" :key="dict.value" :label="dict.label" :value="dict.value"></el-option>
               </el-select>
             </el-form-item>
           </el-col>
@@ -174,12 +157,8 @@
           </el-col>
           <el-col :span="12">
             <el-form-item label="处理时间" prop="handleTime">
-              <el-date-picker clearable
-                v-model="form.handleTime"
-                type="datetime"
-                value-format="YYYY-MM-DD HH:mm:ss"
-                placeholder="请选择处理时间"
-                class="tech-date-picker">
+              <el-date-picker clearable v-model="form.handleTime" type="datetime" value-format="YYYY-MM-DD HH:mm:ss"
+                placeholder="请选择处理时间" class="tech-date-picker">
               </el-date-picker>
             </el-form-item>
           </el-col>
@@ -357,72 +336,58 @@ getList()
 .complaint-handle-page {
   padding: 24px;
   min-height: calc(100vh - 84px);
-  background: linear-gradient(135deg, #0a0e27 0%, #111936 100%);
+  background: #ffffff;
 }
 
 .tech-title {
   margin-bottom: 24px;
   padding-bottom: 16px;
-  border-bottom: 1px solid rgba(0, 212, 255, 0.2);
-  
+  border-bottom: 1px solid #e0e0e0;
+
   .tech-gradient-text {
     font-size: 32px;
     font-weight: 700;
-    background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: #333333;
     display: block;
     margin-bottom: 8px;
   }
-  
+
   .tech-subtitle {
     font-size: 14px;
-    color: #64748b;
+    color: #666666;
     font-weight: 400;
   }
 }
 
 .tech-card {
-  background: rgba(17, 25, 54, 0.9);
-  border: 1px solid rgba(0, 212, 255, 0.25);
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
   border-radius: 12px;
   margin-bottom: 20px;
   overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(0, 212, 255, 0.1);
-  
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, #00d4ff, #7c3aed);
-    opacity: 0.9;
-  }
-  
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+
   :deep(.el-card__header) {
-    background: linear-gradient(90deg, rgba(0, 212, 255, 0.08) 0%, rgba(124, 58, 237, 0.05) 100%);
-    border-bottom: 1px solid rgba(0, 212, 255, 0.15);
+    background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%);
+    border-bottom: 1px solid #e0e0e0;
     padding: 16px 20px;
   }
-  
+
   :deep(.el-card__body) {
     padding: 20px;
   }
-  
+
   &:hover {
-    border-color: rgba(0, 212, 255, 0.4);
-    box-shadow: 0 4px 25px rgba(0, 212, 255, 0.15);
+    border-color: #007bff;
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
   }
 }
 
 .search-card {
   margin-bottom: 20px;
-  
+
   :deep(.el-card__body) {
-    background: rgba(30, 39, 70, 0.3);
+    background: #f8f9fa;
   }
 }
 
@@ -438,11 +403,10 @@ getList()
   gap: 10px;
   font-size: 16px;
   font-weight: 600;
-  color: #00d4ff;
-  text-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
-  
+  color: #333333;
+
   .title-icon {
-    color: #7c3aed;
+    color: #007bff;
     font-size: 20px;
   }
 }
@@ -456,9 +420,9 @@ getList()
 .search-form {
   .el-form-item {
     margin-bottom: 18px;
-    
+
     :deep(.el-form-item__label) {
-      color: #94a3b8;
+      color: #666666;
       font-weight: 500;
     }
   }
@@ -466,110 +430,109 @@ getList()
 
 .tech-input {
   :deep(.el-input__wrapper) {
-    background: rgba(30, 39, 70, 0.8);
-    border: 1px solid rgba(0, 212, 255, 0.25);
+    background: #ffffff;
+    border: 1px solid #ddd;
     box-shadow: none;
     transition: all 0.3s ease;
-    
+
     &:hover {
-      border-color: rgba(0, 212, 255, 0.5);
-      box-shadow: 0 0 8px rgba(0, 212, 255, 0.1);
+      border-color: #007bff;
     }
-    
+
     &.is-focus {
-      border-color: #00d4ff;
-      box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.15), 0 0 12px rgba(0, 212, 255, 0.2);
+      border-color: #007bff;
+      box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.15);
     }
   }
-  
+
   :deep(.el-input__inner) {
-    color: #e2e8f0;
+    color: #333333;
     font-weight: 500;
-    
+
     &::placeholder {
-      color: #64748b;
+      color: #999999;
     }
   }
-  
+
   :deep(.el-input__prefix) {
-    color: #00d4ff;
+    color: #007bff;
   }
 }
 
 .tech-select {
   width: 100%;
-  
+
   :deep(.el-input__wrapper) {
-    background: rgba(30, 39, 70, 0.8);
-    border: 1px solid rgba(0, 212, 255, 0.25);
+    background: #ffffff;
+    border: 1px solid #ddd;
     box-shadow: none;
     transition: all 0.3s ease;
-    
+
     &:hover {
-      border-color: rgba(0, 212, 255, 0.5);
+      border-color: #007bff;
     }
-    
+
     &.is-focus {
-      border-color: #00d4ff;
-      box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.15), 0 0 12px rgba(0, 212, 255, 0.2);
+      border-color: #007bff;
+      box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.15);
     }
   }
-  
+
   :deep(.el-input__inner) {
-    color: #e2e8f0;
+    color: #333333;
     font-weight: 500;
   }
 }
 
 .tech-date-picker {
   width: 100%;
-  
+
   :deep(.el-input__wrapper) {
-    background: rgba(30, 39, 70, 0.8);
-    border: 1px solid rgba(0, 212, 255, 0.25);
+    background: #ffffff;
+    border: 1px solid #ddd;
     box-shadow: none;
     transition: all 0.3s ease;
-    
+
     &:hover {
-      border-color: rgba(0, 212, 255, 0.5);
+      border-color: #007bff;
     }
-    
+
     &.is-focus {
-      border-color: #00d4ff;
-      box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.15), 0 0 12px rgba(0, 212, 255, 0.2);
+      border-color: #007bff;
+      box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.15);
     }
   }
-  
+
   :deep(.el-input__inner) {
-    color: #e2e8f0;
+    color: #333333;
     font-weight: 500;
   }
 }
 
 .tech-btn {
-  background: rgba(30, 39, 70, 0.8);
-  border: 1px solid rgba(0, 212, 255, 0.4);
-  color: #94a3b8;
+  background: #f8f9fa;
+  border: 1px solid #ddd;
+  color: #666666;
   font-weight: 500;
   transition: all 0.3s ease;
-  
+
   &:hover {
-    border-color: #00d4ff;
-    color: #00d4ff;
-    background: rgba(0, 212, 255, 0.1);
-    box-shadow: 0 0 12px rgba(0, 212, 255, 0.2);
+    border-color: #007bff;
+    color: #007bff;
+    background: rgba(0, 123, 255, 0.05);
+    box-shadow: 0 0 8px rgba(0, 123, 255, 0.15);
   }
-  
+
   &.tech-btn-primary {
-    background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%);
+    background: linear-gradient(135deg, #007bff 0%, #6610f2 100%);
     border: none;
     color: #fff;
-    
+
     &:hover {
-      background: linear-gradient(135deg, #00c4e8 0%, #6d34d1 100%);
+      background: linear-gradient(135deg, #0069d9 0%, #550bd8 100%);
       color: #fff;
       transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(0, 212, 255, 0.4);
+      box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
     }
   }
 }
@@ -577,97 +540,96 @@ getList()
 .tech-table {
   :deep(.el-table__header-wrapper) {
     background: transparent;
-    
+
     th {
-      background: linear-gradient(180deg, #1e2746 0%, #1a2342 100%);
-      color: #00d4ff;
+      background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%);
+      color: #333333;
       font-weight: 600;
       font-size: 13px;
-      border-bottom: 1px solid rgba(0, 212, 255, 0.25);
+      border-bottom: 1px solid #e0e0e0;
       padding: 14px 0;
-      text-shadow: 0 0 8px rgba(0, 212, 255, 0.2);
     }
   }
-  
+
   :deep(.el-table__body-wrapper) {
     tr {
       background: transparent;
       transition: all 0.3s ease;
-      
+
       &:hover {
-        background: rgba(0, 212, 255, 0.08) !important;
+        background: rgba(0, 123, 255, 0.05) !important;
       }
-      
+
       td {
-        border-bottom: 1px solid rgba(0, 212, 255, 0.12);
-        color: #cbd5e1;
+        border-bottom: 1px solid #e9ecef;
+        color: #333333;
         padding: 12px 0;
         font-size: 13px;
       }
     }
   }
-  
+
   :deep(.el-checkbox__inner) {
-    background: rgba(30, 39, 70, 0.8);
-    border-color: rgba(0, 212, 255, 0.3);
-    
+    background: #ffffff;
+    border-color: #ddd;
+
     &:hover {
-      border-color: #00d4ff;
+      border-color: #007bff;
     }
   }
 }
 
 .complaint-content {
-  color: #94a3b8;
+  color: #666666;
   font-size: 12px;
   line-height: 1.6;
   max-height: 60px;
   overflow: hidden;
-  
+
   :deep(p) {
     margin: 0;
   }
-  
+
   :deep(*) {
-    color: #94a3b8 !important;
+    color: #666666 !important;
   }
 }
 
 .time-text {
-  color: #64748b;
+  color: #666666;
   font-size: 12px;
   font-family: 'Courier New', monospace;
 }
 
 .tech-dialog {
   :deep(.el-dialog) {
-    background: linear-gradient(180deg, #111936 0%, #0f1629 100%);
-    border: 1px solid rgba(0, 212, 255, 0.3);
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
     border-radius: 12px;
-    box-shadow: 0 0 40px rgba(0, 212, 255, 0.2);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   }
-  
+
   :deep(.el-dialog__header) {
-    background: linear-gradient(90deg, rgba(0, 212, 255, 0.1) 0%, rgba(124, 58, 237, 0.05) 100%);
-    border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+    background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%);
+    border-bottom: 1px solid #e0e0e0;
     padding: 16px 20px;
     margin-right: 0;
-    
+
     .el-dialog__title {
-      color: #00d4ff;
+      color: #333333;
       font-weight: 600;
       font-size: 18px;
     }
   }
-  
+
   :deep(.el-dialog__body) {
     background: transparent;
     padding: 20px;
   }
-  
+
   :deep(.el-dialog__footer) {
-    background: rgba(30, 39, 70, 0.5);
-    border-top: 1px solid rgba(0, 212, 255, 0.15);
+    background: #f8f9fa;
+    border-top: 1px solid #e0e0e0;
     padding: 16px 20px;
   }
 }
@@ -675,7 +637,7 @@ getList()
 .dialog-form {
   .el-form-item {
     margin-bottom: 18px;
-    
+
     :deep(.el-form-item__label) {
       color: #94a3b8;
       font-weight: 500;
@@ -685,23 +647,23 @@ getList()
 
 .tech-textarea {
   :deep(.el-textarea__inner) {
-    background: rgba(30, 39, 70, 0.8);
-    border: 1px solid rgba(0, 212, 255, 0.25);
-    color: #e2e8f0;
+    background: #ffffff;
+    border: 1px solid #ddd;
+    color: #333333;
     font-weight: 500;
     transition: all 0.3s ease;
-    
+
     &:hover {
-      border-color: rgba(0, 212, 255, 0.5);
+      border-color: #007bff;
     }
-    
+
     &:focus {
-      border-color: #00d4ff;
-      box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.15), 0 0 12px rgba(0, 212, 255, 0.2);
+      border-color: #007bff;
+      box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.15);
     }
-    
+
     &::placeholder {
-      color: #64748b;
+      color: #999999;
     }
   }
 }
@@ -710,14 +672,14 @@ getList()
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-  
+
   .cancel-btn {
     background: transparent;
     border: 1px solid rgba(0, 212, 255, 0.4);
     color: #94a3b8;
     font-weight: 500;
     transition: all 0.3s ease;
-    
+
     &:hover {
       border-color: #00d4ff;
       color: #00d4ff;
@@ -735,17 +697,18 @@ getList()
   border: 1px solid rgba(0, 212, 255, 0.3);
   border-radius: 8px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-  
+
   .el-select-dropdown__item {
     color: #94a3b8;
     padding: 10px 16px;
     font-weight: 500;
-    
-    &:hover, &.selected {
+
+    &:hover,
+    &.selected {
       background: rgba(0, 212, 255, 0.15);
       color: #00d4ff;
     }
-    
+
     &.selected {
       font-weight: 600;
     }

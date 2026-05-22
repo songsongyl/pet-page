@@ -3,63 +3,33 @@
     <el-form ref="registerRef" :model="registerForm" :rules="registerRules" class="register-form">
       <h3 class="title">毛孩子的家</h3>
       <el-form-item prop="username">
-        <el-input 
-          v-model="registerForm.username" 
-          type="text" 
-          size="large" 
-          auto-complete="off" 
-          placeholder="账号"
-        >
+        <el-input v-model="registerForm.username" type="text" size="large" auto-complete="off" placeholder="账号">
           <template #prefix><svg-icon icon-class="user" class="el-input__icon input-icon" /></template>
         </el-input>
       </el-form-item>
       <el-form-item prop="password">
-        <el-input
-          v-model="registerForm.password"
-          type="password"
-          size="large" 
-          auto-complete="off"
-          placeholder="密码"
-          @keyup.enter="handleRegister"
-        >
+        <el-input v-model="registerForm.password" type="password" size="large" auto-complete="off" placeholder="密码"
+          @keyup.enter="handleRegister">
           <template #prefix><svg-icon icon-class="password" class="el-input__icon input-icon" /></template>
         </el-input>
       </el-form-item>
       <el-form-item prop="confirmPassword">
-        <el-input
-          v-model="registerForm.confirmPassword"
-          type="password"
-          size="large" 
-          auto-complete="off"
-          placeholder="确认密码"
-          @keyup.enter="handleRegister"
-        >
+        <el-input v-model="registerForm.confirmPassword" type="password" size="large" auto-complete="off"
+          placeholder="确认密码" @keyup.enter="handleRegister">
           <template #prefix><svg-icon icon-class="password" class="el-input__icon input-icon" /></template>
         </el-input>
       </el-form-item>
       <el-form-item prop="code" v-if="captchaEnabled">
-        <el-input
-          size="large" 
-          v-model="registerForm.code"
-          auto-complete="off"
-          placeholder="验证码"
-          style="width: 63%"
-          @keyup.enter="handleRegister"
-        >
+        <el-input size="large" v-model="registerForm.code" auto-complete="off" placeholder="验证码" style="width: 63%"
+          @keyup.enter="handleRegister">
           <template #prefix><svg-icon icon-class="validCode" class="el-input__icon input-icon" /></template>
         </el-input>
         <div class="register-code">
-          <img :src="codeUrl" @click="getCode" class="register-code-img"/>
+          <img :src="codeUrl" @click="getCode" class="register-code-img" />
         </div>
       </el-form-item>
       <el-form-item style="width:100%;">
-        <el-button
-          :loading="loading"
-          size="large" 
-          type="primary"
-          style="width:100%;"
-          @click.prevent="handleRegister"
-        >
+        <el-button :loading="loading" size="large" type="primary" style="width:100%;" @click.prevent="handleRegister">
           <span v-if="!loading">注 册</span>
           <span v-else>注 册 中...</span>
         </el-button>
@@ -76,11 +46,13 @@
 </template>
 
 <script setup>
+import { ref } from "vue";
+import { useRouter } from "vue-router";
 import { ElMessageBox } from "element-plus";
 import { getCodeImg, register } from "@/api/login";
 
 const router = useRouter();
-const { proxy } = getCurrentInstance();
+const registerRef = ref(null);
 
 const registerForm = ref({
   username: "",
@@ -119,20 +91,30 @@ const loading = ref(false);
 const captchaEnabled = ref(true);
 
 function handleRegister() {
-  proxy.$refs.registerRef.validate(valid => {
+  registerRef.value.validate(valid => {
     if (valid) {
       loading.value = true;
       register(registerForm.value).then(res => {
+        loading.value = false;
         const username = registerForm.value.username;
         ElMessageBox.alert("<font color='red'>恭喜你，您的账号 " + username + " 注册成功！</font>", "系统提示", {
           dangerouslyUseHTMLString: true,
           type: "success",
         }).then(() => {
           router.push("/login");
-        }).catch(() => {});
-      }).catch(() => {
+        }).catch(() => { });
+      }).catch(error => {
         loading.value = false;
-        if (captchaEnabled) {
+        if (error.response && error.response.data && error.response.data.msg) {
+          ElMessageBox.alert(error.response.data.msg, "系统提示", {
+            type: "error"
+          });
+        } else {
+          ElMessageBox.alert("注册失败，请稍后重试", "系统提示", {
+            type: "error"
+          });
+        }
+        if (captchaEnabled.value) {
           getCode();
         }
       });
@@ -164,6 +146,7 @@ getCode();
   background-position: center;
   backdrop-filter: blur(3px);
 }
+
 .title {
   margin: 0px auto 30px auto;
   text-align: center;
@@ -181,23 +164,28 @@ getCode();
   padding: 40px 35px 20px 35px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   transition: all 0.3s ease;
+
   &:hover {
     box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
   }
+
   .el-input {
     height: 45px;
     margin-bottom: 5px;
+
     input {
       height: 45px;
       border-radius: 8px;
       border: 2px solid #f0f0f0;
       transition: all 0.3s ease;
+
       &:focus {
         border-color: #4CAF50;
         box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
       }
     }
   }
+
   .input-icon {
     height: 44px;
     width: 20px;
@@ -205,27 +193,32 @@ getCode();
     color: #999;
   }
 }
+
 .register-tip {
   font-size: 13px;
   text-align: center;
   color: #bfbfbf;
 }
+
 .register-code {
   width: 35%;
   height: 45px;
   float: right;
+
   img {
     cursor: pointer;
     vertical-align: middle;
     border-radius: 8px;
     border: 1px solid #e0e0e0;
     transition: all 0.2s ease;
+
     &:hover {
       transform: scale(1.05);
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     }
   }
 }
+
 .el-register-footer {
   height: 40px;
   line-height: 40px;
@@ -239,12 +232,14 @@ getCode();
   letter-spacing: 1px;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
+
 .register-code-img {
   height: 45px;
   padding-left: 15px;
   width: 100%;
   object-fit: cover;
 }
+
 .el-button {
   border-radius: 8px;
   height: 45px;
@@ -252,10 +247,12 @@ getCode();
   font-weight: 500;
   border: none;
   transition: all 0.3s ease;
+
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
   }
+
   &:active {
     transform: translateY(0);
   }

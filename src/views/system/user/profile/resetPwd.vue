@@ -17,9 +17,14 @@
 </template>
 
 <script setup>
+import { ref, reactive, getCurrentInstance } from "vue";
+import { useRouter } from "vue-router";
 import { updateUserPwd } from "@/api/system/user";
+import useUserStore from '@/store/modules/user';
 
 const { proxy } = getCurrentInstance();
+const router = useRouter();
+const userStore = useUserStore();
 
 const user = reactive({
   oldPassword: undefined,
@@ -46,6 +51,10 @@ function submit() {
     if (valid) {
       updateUserPwd(user.oldPassword, user.newPassword).then(response => {
         proxy.$modal.msgSuccess("修改成功");
+        // 退出登录并跳转到登录页面
+        userStore.logOut().then(() => {
+          router.push("/login");
+        });
       });
     }
   });

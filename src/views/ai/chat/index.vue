@@ -13,7 +13,7 @@
     </div>
     <div class="chat-body" ref="chatBody">
       <div v-for="(message, index) in messages" :key="index"
-           :class="['chat-message', message.role === 'user' ? 'user-message' : 'ai-message']">
+        :class="['chat-message', message.role === 'user' ? 'user-message' : 'ai-message']">
         <div v-if="message.role === 'assistant'" class="ai-avatar">🐾</div>
         <div class="message-wrapper">
           <div class="message-content">
@@ -33,13 +33,8 @@
     </div>
     <div class="chat-footer">
       <div class="input-wrapper">
-        <el-input
-          v-model="inputMessage"
-          placeholder="输入您想了解的养宠问题..."
-          @keyup.enter="sendMessage"
-          :disabled="loading"
-          class="pet-input"
-        >
+        <el-input v-model="inputMessage" placeholder="输入您想了解的养宠问题..." @keyup.enter="sendMessage" :disabled="loading"
+          class="pet-input">
         </el-input>
         <el-button type="primary" @click="sendMessage" :loading="loading" class="send-btn">
           <span v-if="!loading">发送</span>
@@ -142,6 +137,7 @@ onMounted(() => {
 
 <style scoped>
 .pet-chat-container {
+  position: relative;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -189,6 +185,7 @@ onMounted(() => {
 
 .chat-body {
   flex: 1;
+  height: calc(100vh - 220px);
   padding: 20px 24px;
   overflow-y: auto;
   display: flex;
@@ -289,12 +286,25 @@ onMounted(() => {
   animation: bounce 1.4s infinite ease-in-out both;
 }
 
-.loading-dots span:nth-child(1) { animation-delay: -0.32s; }
-.loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+.loading-dots span:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.loading-dots span:nth-child(2) {
+  animation-delay: -0.16s;
+}
 
 @keyframes bounce {
-  0%, 80%, 100% { transform: scale(0); }
-  40% { transform: scale(1); }
+
+  0%,
+  80%,
+  100% {
+    transform: scale(0);
+  }
+
+  40% {
+    transform: scale(1);
+  }
 }
 
 .loading-text {

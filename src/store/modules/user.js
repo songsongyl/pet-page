@@ -11,7 +11,8 @@ const useUserStore = defineStore(
       name: '',
       avatar: '',
       roles: [],
-      permissions: []
+      permissions: [],
+      roleId: null
     }),
     actions: {
       // 登录
@@ -42,6 +43,12 @@ const useUserStore = defineStore(
               this.permissions = res.permissions
             } else {
               this.roles = ['ROLE_DEFAULT']
+            }
+            // 获取用户的roleId，管理员是1，普通用户是100
+            if (user.roles && user.roles.length > 0) {
+              this.roleId = user.roles[0].roleId
+            } else {
+              this.roleId = null
             }
             this.id = user.userId
             this.name = user.userName

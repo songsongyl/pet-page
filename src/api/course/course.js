@@ -42,3 +42,19 @@ export function delCourse(courseId) {
     method: 'delete'
   })
 }
+
+// 更新课程浏览次数
+export function updateViewCount(courseId) {
+  return request({
+    url: '/course/course/' + courseId + '/view',
+    method: 'put'
+  })
+}
+
+// 更新课程收藏次数
+export function updateCollectCount(courseId) {
+  return request({
+    url: '/course/course/' + courseId + '/collect',
+    method: 'put'
+  })
+}

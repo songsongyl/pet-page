@@ -1,15 +1,17 @@
 <template>
   <div class="admin-volunteer-detail tech-page tech-grid-bg">
     <div class="tech-title">
-      <span class="tech-gradient-text">志愿者详情</span>
-      <span class="tech-subtitle">查看志愿者详细信息</span>
+      <!-- <span class="tech-gradient-text">志愿者详情</span> -->
+      <!-- <span class="tech-subtitle">查看志愿者详细信息</span> -->
     </div>
 
     <el-card shadow="hover" class="tech-card">
       <template #header>
         <div class="card-header">
           <span class="section-title">
-            <el-icon class="title-icon"><View /></el-icon>
+            <el-icon class="title-icon">
+              <View />
+            </el-icon>
             志愿者信息
           </span>
           <el-button @click="handleBack">返回列表</el-button>
@@ -19,12 +21,14 @@
       <div class="detail-info">
         <el-descriptions :column="2" border>
           <el-descriptions-item label="ID">
-            <span class="id-badge">#{{ volunteer.id }}</span>
+            <span class="id-badge">#{{ volunteer.volunteerId || volunteer.id }}</span>
           </el-descriptions-item>
           <el-descriptions-item label="姓名">
             <div class="user-info">
               <el-avatar :size="32" class="user-avatar">
-                <el-icon><UserFilled /></el-icon>
+                <el-icon>
+                  <UserFilled />
+                </el-icon>
               </el-avatar>
               <span class="user-name">{{ volunteer.name }}</span>
             </div>
@@ -39,9 +43,15 @@
           </el-descriptions-item>
           <el-descriptions-item label="状态">
             <el-tag :type="getStatusType(volunteer.status)" class="status-tag" effect="dark">
-              <el-icon v-if="volunteer.status === 'pending'"><Clock /></el-icon>
-              <el-icon v-else-if="volunteer.status === 'approved'"><CircleCheck /></el-icon>
-              <el-icon v-else><CircleClose /></el-icon>
+              <el-icon v-if="volunteer.status === 'pending'">
+                <Clock />
+              </el-icon>
+              <el-icon v-else-if="volunteer.status === 'approved'">
+                <CircleCheck />
+              </el-icon>
+              <el-icon v-else>
+                <CircleClose />
+              </el-icon>
               {{ getStatusText(volunteer.status) }}
             </el-tag>
           </el-descriptions-item>
@@ -66,18 +76,18 @@ const volunteer = ref({})
 
 const getStatusType = (status) => {
   switch (status) {
-    case 'pending': return 'warning'
-    case 'approved': return 'success'
-    case 'rejected': return 'danger'
+    case 0: case '0': case 'pending': return 'warning'
+    case 1: case '1': case 'approved': return 'success'
+    case 2: case '2': case 'rejected': return 'danger'
     default: return ''
   }
 }
 
 const getStatusText = (status) => {
   switch (status) {
-    case 'pending': return '待审核'
-    case 'approved': return '已通过'
-    case 'rejected': return '已拒绝'
+    case 0: case '0': case 'pending': return '待审核'
+    case 1: case '1': case 'approved': return '已通过'
+    case 2: case '2': case 'rejected': return '已拒绝'
     default: return status
   }
 }

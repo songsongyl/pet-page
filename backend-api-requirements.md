@@ -31,7 +31,7 @@
     "futurePlans": "计划长期饲养", // 未来计划
     "noAbandon": "是", // 是否承诺不随意弃养: 是/否
     "acceptVisit": "是", // 是否接受回访: 是/否
-    "applicantName": "张三", // 申请人姓名
+    "applicantName": "李秀梅", // 申请人姓名
     "contactPhone": "13800138000", // 联系电话
     "address": "北京市朝阳区", // 居住地址
     "files": [] // 证明材料文件
@@ -70,7 +70,7 @@
       "rows": [
         {
           "id": 1,
-          "applicantName": "张三",
+          "applicantName": "李秀梅",
           "contactPhone": "13800138000",
           "status": "pending", // pending(待审批), approved(已批准), rejected(已拒绝)
           "createTime": "2026-04-12 10:00:00"
@@ -105,7 +105,7 @@
       "futurePlans": "计划长期饲养",
       "noAbandon": "是",
       "acceptVisit": "是",
-      "applicantName": "张三",
+      "applicantName": "李秀梅",
       "contactPhone": "13800138000",
       "address": "北京市朝阳区",
       "status": "pending",
@@ -154,7 +154,7 @@
 - **请求体**:
   ```json
   {
-    "donorName": "李四", // 捐赠人姓名
+    "donorName": "王建国", // 捐赠人姓名
     "contactPhone": "13900139000", // 联系电话
     "donationType": "food", // 捐赠类型: food(食品), supplies(用品), medicine(药品), other(其他)
     "items": [
@@ -200,7 +200,7 @@
       "rows": [
         {
           "id": 1,
-          "donorName": "李四",
+          "donorName": "王建国",
           "contactPhone": "13900139000",
           "donationType": "food",
           "status": "pending", // pending(待确认), confirmed(已确认), cancelled(已取消)
@@ -221,7 +221,7 @@
     "msg": "查询成功",
     "data": {
       "id": 1,
-      "donorName": "李四",
+      "donorName": "王建国",
       "contactPhone": "13900139000",
       "donationType": "food",
       "items": [
@@ -286,7 +286,7 @@
       "rows": [
         {
           "id": 1,
-          "applicantName": "张三",
+          "applicantName": "李秀梅",
           "contactPhone": "13800138000",
           "status": "pending",
           "createTime": "2026-04-12 10:00:00"
@@ -334,7 +334,7 @@
       "rows": [
         {
           "id": 1,
-          "donorName": "李四",
+          "donorName": "王建国",
           "contactPhone": "13900139000",
           "donationType": "food",
           "status": "pending",

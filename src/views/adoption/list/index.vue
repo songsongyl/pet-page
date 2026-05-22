@@ -4,29 +4,26 @@
       <template #header>
         <div class="card-header">
           <span>领养申请列表</span>
-          <el-button type="primary" @click="handleAdd">新增申请</el-button>
         </div>
       </template>
-      
-      <el-form :inline="true" :model="searchForm" class="mb-4">
+
+      <el-form :inline="true" :model="queryParams" class="mb-4">
         <el-form-item label="申请状态">
-          <el-select v-model="searchForm.status" placeholder="请选择状态">
-            <el-option label="待审批" value="0" />
-            <el-option label="已通过" value="1" />
-            <el-option label="已拒绝" value="2" />
-            <el-option label="已领养" value="3" />
-            <el-option label="已取消" value="4" />
+          <el-select v-model="queryParams.applyStatus" placeholder="请选择状态" clearable style="width: 120px">
+            <el-option label="待审核" value="0" />
+            <el-option label="审核通过" value="1" />
+            <el-option label="审核驳回" value="2" />
           </el-select>
         </el-form-item>
         <el-form-item label="申请人">
-          <el-input v-model="searchForm.applicantName" placeholder="请输入申请人姓名" />
+          <el-input v-model="queryParams.applicantName" placeholder="请输入申请人姓名" clearable style="width: 150px" />
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="handleSearch">查询</el-button>
-          <el-button @click="resetSearch">重置</el-button>
+          <el-button type="primary" @click="handleQuery">查询</el-button>
+          <el-button @click="resetQuery">重置</el-button>
         </el-form-item>
       </el-form>
-      
+
       <el-table :data="tableData" style="width: 100%">
         <el-table-column prop="applicationId" label="申请编号" width="100" />
         <el-table-column prop="applicantName" label="申请人" width="120" />
@@ -48,19 +45,12 @@
           </template>
         </el-table-column>
       </el-table>
-      
-      <el-pagination
-        v-model:current-page="pagination.current"
-        v-model:page-size="pagination.size"
-        :page-sizes="[10, 20, 50, 100]"
-        layout="total, sizes, prev, pager, next, jumper"
-        :total="pagination.total"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-        style="margin-top: 20px"
-      />
+
+      <el-pagination v-model:current-page="pagination.current" v-model:page-size="pagination.size"
+        :page-sizes="[10, 20, 50, 100]" layout="total, sizes, prev, pager, next, jumper" :total="pagination.total"
+        @size-change="handleSizeChange" @current-change="handleCurrentChange" style="margin-top: 20px" />
     </el-card>
-    
+
 
   </div>
 </template>
@@ -73,8 +63,8 @@ import { getAdoptionList } from '@/api/adoption/application'
 
 const router = useRouter()
 const tableData = ref([])
-const searchForm = reactive({
-  status: '',
+const queryParams = reactive({
+  applyStatus: null,
   applicantName: ''
 })
 const pagination = reactive({
@@ -83,15 +73,13 @@ const pagination = reactive({
   total: 0
 })
 
-
-
 const getStatusType = (status) => {
   switch (status) {
-    case 0: return 'warning' // 待审核
-    case 1: return 'success' // 审核通过
-    case 2: return 'danger' // 审核驳回
-    case 3: return 'info' // 已领养
-    case 4: return 'info' // 已取消
+    case 0: return 'warning'
+    case 1: return 'success'
+    case 2: return 'danger'
+    case 3: return 'info'
+    case 4: return 'info'
     default: return ''
   }
 }
@@ -119,7 +107,8 @@ const getHousingTypeText = (type) => {
 const loadData = async () => {
   try {
     const response = await getAdoptionList({
-      ...searchForm,
+      applyStatus: queryParams.applyStatus,
+      applicantName: queryParams.applicantName,
       pageNum: pagination.current,
       pageSize: pagination.size
     })
@@ -130,14 +119,14 @@ const loadData = async () => {
   }
 }
 
-const handleSearch = () => {
+const handleQuery = () => {
   pagination.current = 1
   loadData()
 }
 
-const resetSearch = () => {
-  searchForm.status = ''
-  searchForm.applicantName = ''
+const resetQuery = () => {
+  queryParams.applyStatus = null
+  queryParams.applicantName = ''
   pagination.current = 1
   loadData()
 }
@@ -193,11 +182,11 @@ onMounted(() => {
   .adoption-list {
     padding: 10px;
   }
-  
+
   .el-table {
     font-size: 12px;
   }
-  
+
   .el-table-column {
     width: auto !important;
   }

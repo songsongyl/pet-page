@@ -9,84 +9,74 @@
       <template #header>
         <div class="card-header">
           <span class="section-title">
-            <el-icon class="title-icon"><Present /></el-icon>
+            <el-icon class="title-icon">
+              <Present />
+            </el-icon>
             捐赠审批列表
           </span>
           <div class="batch-actions">
-            <el-button type="success" class="tech-btn batch-confirm-btn" @click="handleBatchConfirm" :disabled="!selectedRows.length">
-              <el-icon><Check /></el-icon>
+            <el-button type="success" class="tech-btn batch-confirm-btn" @click="handleBatchConfirm"
+              :disabled="!selectedRows.length">
+              <el-icon>
+                <Check />
+              </el-icon>
               批量确认
             </el-button>
-            <el-button type="danger" class="tech-btn batch-cancel-btn" @click="handleBatchCancel" :disabled="!selectedRows.length">
-              <el-icon><Close /></el-icon>
+            <el-button type="danger" class="tech-btn batch-cancel-btn" @click="handleBatchCancel"
+              :disabled="!selectedRows.length">
+              <el-icon>
+                <Close />
+              </el-icon>
               批量取消
             </el-button>
           </div>
         </div>
       </template>
-      
-      <el-form :inline="true" :model="searchForm" class="search-form">
+
+      <el-form :inline="true" :model="queryParams" class="search-form">
+        <el-form-item label="捐赠类型">
+          <el-select v-model="queryParams.donationType" placeholder="请选择类型" clearable style="width: 120px"
+            class="tech-select">
+            <el-option label="物品" value="material" />
+            <el-option label="资金" value="money" />
+            <el-option label="志愿服务" value="volunteer" />
+          </el-select>
+        </el-form-item>
         <el-form-item label="捐赠状态">
-          <el-select v-model="searchForm.status" placeholder="请选择状态" class="tech-select">
-            <el-option label="待确认" value="pending">
-              <el-icon class="option-icon"><Timer /></el-icon>
-              待确认
-            </el-option>
-            <el-option label="已确认" value="confirmed">
-              <el-icon class="option-icon"><Check /></el-icon>
-              已确认
-            </el-option>
-            <el-option label="已取消" value="cancelled">
-              <el-icon class="option-icon"><Close /></el-icon>
-              已取消
-            </el-option>
+          <el-select v-model="queryParams.donationStatus" placeholder="请选择状态" clearable style="width: 120px"
+            class="tech-select">
+            <el-option label="待确认" :value="0" />
+            <el-option label="已确认" :value="1" />
+            <el-option label="已取消" :value="2" />
           </el-select>
         </el-form-item>
         <el-form-item label="捐赠人">
-          <el-input v-model="searchForm.donorName" placeholder="请输入捐赠人姓名" class="tech-input">
+          <el-input v-model="queryParams.donorName" placeholder="请输入捐赠人姓名" clearable style="width: 150px"
+            class="tech-input">
             <template #prefix>
-              <el-icon><User /></el-icon>
+              <el-icon>
+                <User />
+              </el-icon>
             </template>
           </el-input>
         </el-form-item>
-        <el-form-item label="捐赠类型">
-          <el-select v-model="searchForm.donationType" placeholder="请选择捐赠类型" class="tech-select">
-            <el-option label="食品" value="food">
-              <el-icon class="option-icon"><Food /></el-icon>
-              食品
-            </el-option>
-            <el-option label="用品" value="supplies">
-              <el-icon class="option-icon"><Box /></el-icon>
-              用品
-            </el-option>
-            <el-option label="药品" value="medicine">
-              <el-icon class="option-icon"><FirstAidKit /></el-icon>
-              药品
-            </el-option>
-            <el-option label="其他" value="other">
-              <el-icon class="option-icon"><More /></el-icon>
-              其他
-            </el-option>
-          </el-select>
-        </el-form-item>
         <el-form-item>
-          <el-button type="primary" class="tech-btn search-btn" @click="handleSearch">
-            <el-icon><Search /></el-icon>
+          <el-button type="primary" class="tech-btn search-btn" @click="handleQuery">
+            <el-icon>
+              <Search />
+            </el-icon>
             查询
           </el-button>
-          <el-button class="reset-btn" @click="resetSearch">
-            <el-icon><RefreshRight /></el-icon>
+          <el-button class="reset-btn" @click="resetQuery">
+            <el-icon>
+              <RefreshRight />
+            </el-icon>
             重置
           </el-button>
         </el-form-item>
       </el-form>
-      
-      <el-table 
-        :data="tableData" 
-        class="tech-table donation-table" 
-        stripe
-        @selection-change="handleSelectionChange"
-      >
+
+      <el-table :data="tableData" class="tech-table donation-table" stripe @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="55" />
         <el-table-column prop="donationId" label="捐赠编号" width="100" />
         <el-table-column prop="donorName" label="捐赠人" width="120" />
@@ -105,45 +95,50 @@
         <el-table-column prop="donationTime" label="捐赠时间" width="180" />
         <el-table-column prop="donationStatus" label="状态" width="100">
           <template #default="scope">
-            <el-tag :type="getStatusType(scope.row.donationStatus)">{{ getStatusText(scope.row.donationStatus) }}</el-tag>
+            <el-tag :type="getStatusType(scope.row.donationStatus)">{{ getStatusText(scope.row.donationStatus)
+              }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column label="操作" width="200" fixed="right">
           <template #default="scope">
-            <el-button size="small" class="view-btn" @click="handleView(scope.row.donationId)">
-              <el-icon><View /></el-icon>
+            <el-button size="small" class="view-btn" @click="handleView(scope.row.donationId)"
+              v-if="scope.row.donationStatus !== 0">
+              <el-icon>
+                <View />
+              </el-icon>
               查看
             </el-button>
-            <el-button size="small" type="success" class="confirm-btn" @click="handleConfirm(scope.row.donationId)" v-if="scope.row.donationStatus === 0">
-              <el-icon><Check /></el-icon>
+            <el-button size="small" type="success" class="confirm-btn" @click="handleConfirm(scope.row.donationId)"
+              v-if="scope.row.donationStatus === 0">
+              <el-icon>
+                <Check />
+              </el-icon>
               确认收到
             </el-button>
-            <el-button size="small" type="danger" class="cancel-btn" @click="handleCancel(scope.row.donationId)" v-if="scope.row.donationStatus === 0">
-              <el-icon><Close /></el-icon>
+            <el-button size="small" type="danger" class="cancel-btn" @click="handleCancel(scope.row.donationId)"
+              v-if="scope.row.donationStatus === 0">
+              <el-icon>
+                <Close />
+              </el-icon>
               取消
             </el-button>
           </template>
         </el-table-column>
       </el-table>
-      
-      <el-pagination
-        v-if="pagination.total > 0"
-        v-model:current-page="pagination.current"
-        v-model:page-size="pagination.size"
-        :page-sizes="[10, 20, 50, 100]"
-        layout="total, sizes, prev, pager, next, jumper"
-        :total="pagination.total"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-        class="tech-pagination"
-      />
+
+      <el-pagination v-if="pagination.total > 0" v-model:current-page="pagination.current"
+        v-model:page-size="pagination.size" :page-sizes="[10, 20, 50, 100]"
+        layout="total, sizes, prev, pager, next, jumper" :total="pagination.total" @size-change="handleSizeChange"
+        @current-change="handleCurrentChange" class="tech-pagination" />
     </el-card>
-    
+
     <!-- 统计卡片 -->
     <div class="stats-cards">
       <el-card shadow="hover" class="tech-card stat-card">
         <div class="stat-content">
-          <el-icon class="stat-icon"><Timer /></el-icon>
+          <el-icon class="stat-icon">
+            <Timer />
+          </el-icon>
           <div class="stat-info">
             <h4>待确认</h4>
             <p class="stat-number">{{ stats.pending }}</p>
@@ -152,7 +147,9 @@
       </el-card>
       <el-card shadow="hover" class="tech-card stat-card">
         <div class="stat-content">
-          <el-icon class="stat-icon"><Check /></el-icon>
+          <el-icon class="stat-icon">
+            <Check />
+          </el-icon>
           <div class="stat-info">
             <h4>已确认</h4>
             <p class="stat-number">{{ stats.confirmed }}</p>
@@ -161,7 +158,9 @@
       </el-card>
       <el-card shadow="hover" class="tech-card stat-card">
         <div class="stat-content">
-          <el-icon class="stat-icon"><Close /></el-icon>
+          <el-icon class="stat-icon">
+            <Close />
+          </el-icon>
           <div class="stat-info">
             <h4>已取消</h4>
             <p class="stat-number">{{ stats.cancelled }}</p>
@@ -170,7 +169,9 @@
       </el-card>
       <el-card shadow="hover" class="tech-card stat-card">
         <div class="stat-content">
-          <el-icon class="stat-icon"><Present /></el-icon>
+          <el-icon class="stat-icon">
+            <Present />
+          </el-icon>
           <div class="stat-info">
             <h4>总捐赠</h4>
             <p class="stat-number">{{ stats.total }}</p>
@@ -199,14 +200,15 @@ import {
   View,
   Check,
   Close,
-  Timer
+  Timer,
+  Wallet
 } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const tableData = ref([])
 const selectedRows = ref([])
-const searchForm = reactive({
-  status: 'pending',
+const queryParams = reactive({
+  donationStatus: null,
   donorName: '',
   donationType: ''
 })
@@ -242,6 +244,9 @@ const getStatusText = (status) => {
 
 const getDonationTypeText = (type) => {
   switch (type) {
+    case 'material': return '物品'
+    case 'money': return '资金'
+    case 'volunteer': return '志愿服务'
     case 'food': return '食品'
     case 'supplies': return '用品'
     case 'medicine': return '药品'
@@ -252,6 +257,9 @@ const getDonationTypeText = (type) => {
 
 const getDonationTypeIcon = (type) => {
   switch (type) {
+    case 'material': return 'Present'
+    case 'money': return 'Wallet'
+    case 'volunteer': return 'User'
     case 'food': return 'Food'
     case 'supplies': return 'Box'
     case 'medicine': return 'FirstAidKit'
@@ -270,7 +278,9 @@ const updateStats = () => {
 const loadData = async () => {
   try {
     const response = await getDonationList({
-      ...searchForm,
+      donationType: queryParams.donationType,
+      donationStatus: queryParams.donationStatus,
+      donorName: queryParams.donorName,
       pageNum: pagination.current,
       pageSize: pagination.size
     })
@@ -286,15 +296,15 @@ const loadData = async () => {
   }
 }
 
-const handleSearch = () => {
+const handleQuery = () => {
   pagination.current = 1
   loadData()
 }
 
-const resetSearch = () => {
-  searchForm.status = 'pending'
-  searchForm.donorName = ''
-  searchForm.donationType = ''
+const resetQuery = () => {
+  queryParams.donationType = ''
+  queryParams.donationStatus = null
+  queryParams.donorName = ''
   pagination.current = 1
   loadData()
 }
@@ -499,10 +509,10 @@ onMounted(() => {
     background: var(--tech-bg-card);
 
     td {
-        background: var(--tech-bg-card);
-        border-bottom: 1px solid var(--tech-border);
-        color: var(--tech-text-secondary);
-      }
+      background: var(--tech-bg-card);
+      border-bottom: 1px solid var(--tech-border);
+      color: var(--tech-text-secondary);
+    }
 
     tr:hover td {
       background: var(--tech-bg-hover);

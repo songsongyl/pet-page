@@ -42,3 +42,11 @@ export function delNoticeInfo(noticeId) {
     method: 'delete'
   })
 }
+
+// 更新公告浏览次数
+export function updateNoticeViewCount(noticeId) {
+  return request({
+    url: '/NoticeInfo/NoticeInfo/' + noticeId + '/view',
+    method: 'put'
+  })
+}

@@ -88,13 +88,13 @@ export const constantRoutes = [
   {
     path: '/adoption',
     component: Layout,
-    meta: { title: '领养申请', icon: 'peoples' },
+    meta: { title: '爱心送养记', icon: 'peoples' },
     children: [
       {
         path: 'list',
         component: () => import('@/views/adoption/list/index.vue'),
         name: 'AdoptionList',
-        meta: { title: '申请列表' }
+        meta: { title: '申请列表', roles: ['admin'] }
       },
       {
         path: 'application',
@@ -102,7 +102,13 @@ export const constantRoutes = [
         name: 'AdoptionApplication',
         meta: { title: '提交申请' }
       },
-      { 
+      {
+        path: 'admin/approval',
+        component: () => import('@/views/adoption/admin/approval.vue'),
+        name: 'AdoptionApproval',
+        meta: { title: '申请审批', roles: ['admin'] }
+      },
+      {
         path: 'detail/:applicationId',
         component: () => import('@/views/adoption/detail/index.vue'),
         name: 'AdoptionDetail',
@@ -115,19 +121,37 @@ export const constantRoutes = [
   {
     path: '/donation',
     component: Layout,
-    meta: { title: '物资捐赠', icon: 'shopping' },
+    meta: { title: '点滴捐爱', icon: 'shopping' },
     children: [
       {
         path: 'list',
         component: () => import('@/views/donation/list/index.vue'),
         name: 'DonationList',
-        meta: { title: '捐赠列表' }
+        meta: { title: '捐赠列表', roles: ['admin'] }
       },
       {
         path: 'application',
         component: () => import('@/views/donation/application/index.vue'),
         name: 'DonationApplication',
-        meta: { title: '提交捐赠' }
+        meta: { title: '物品捐赠' }
+      },
+      {
+        path: 'fund',
+        component: () => import('@/views/donation/fund/index.vue'),
+        name: 'FundDonation',
+        meta: { title: '资金捐助' }
+      },
+      {
+        path: 'volunteer',
+        component: () => import('@/views/donation/volunteer/index.vue'),
+        name: 'VolunteerService',
+        meta: { title: '志愿服务' }
+      },
+      {
+        path: 'admin/approval',
+        component: () => import('@/views/donation/admin/approval.vue'),
+        name: 'DonationApproval',
+        meta: { title: '捐赠审批', roles: ['admin'] }
       },
       {
         path: 'detail/:donationId',
@@ -142,7 +166,7 @@ export const constantRoutes = [
   {
     path: '/story',
     component: Layout,
-    meta: { title: '故事会', icon: 'documentation' },
+    meta: { title: '暖心救助故事汇', icon: 'documentation' },
     children: [
       {
         path: 'list',
@@ -196,9 +220,23 @@ export const constantRoutes = [
   // 知识课堂
   {
     path: '/course',
-    component: () => import('@/views/course/course/index.vue'),
-    name: 'CourseList',
-    meta: { title: '知识课堂', icon: 'education' }
+    component: Layout,
+    meta: { title: '知识课堂', icon: 'education' },
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/course/course/index.vue'),
+        name: 'Course',
+        meta: { title: '知识课堂' }
+      },
+      {
+        path: 'detail/:courseId',
+        component: () => import('@/views/course/detail/index.vue'),
+        name: 'CourseDetail',
+        hidden: true,
+        meta: { title: '课程详情', activeMenu: '/course/index' }
+      }
+    ]
   },
   // AI 智能问答模块
   {
@@ -214,7 +252,288 @@ export const constantRoutes = [
         meta: { title: '智能问答' }
       }
     ]
-  }
+  },
+  // 志愿者管理模块
+  {
+    path: '/admin/volunteer',
+    component: Layout,
+    meta: { title: '志愿者管理', icon: 'user', roles: ['admin'] },
+    children: [
+      {
+        path: '',
+        component: () => import('@/views/admin/volunteer/index.vue'),
+        name: 'Volunteer',
+        meta: { title: '志愿者管理' }
+      },
+      {
+        path: 'add',
+        component: () => import('@/views/admin/volunteer/add.vue'),
+        name: 'VolunteerAdd',
+        hidden: true,
+        meta: { title: '添加志愿者', activeMenu: '/admin/volunteer' }
+      },
+      {
+        path: 'edit/:id',
+        component: () => import('@/views/admin/volunteer/edit.vue'),
+        name: 'VolunteerEdit',
+        hidden: true,
+        meta: { title: '编辑志愿者', activeMenu: '/admin/volunteer' }
+      },
+      {
+        path: 'detail/:id',
+        component: () => import('@/views/admin/volunteer/detail.vue'),
+        name: 'VolunteerDetail',
+        hidden: true,
+        meta: { title: '志愿者详情', activeMenu: '/admin/volunteer' }
+      }
+    ]
+  },
+  // 合作机构管理模块
+  {
+    path: '/admin/organization',
+    component: Layout,
+    meta: { title: '合作机构管理', icon: 'tree', roles: ['admin'] },
+    children: [
+      {
+        path: '',
+        component: () => import('@/views/admin/organization/index.vue'),
+        name: 'Organization',
+        meta: { title: '合作机构管理' }
+      },
+      {
+        path: 'add',
+        component: () => import('@/views/admin/organization/add.vue'),
+        name: 'OrganizationAdd',
+        hidden: true,
+        meta: { title: '添加合作机构', activeMenu: '/admin/organization' }
+      },
+      {
+        path: 'edit/:id',
+        component: () => import('@/views/admin/organization/edit.vue'),
+        name: 'OrganizationEdit',
+        hidden: true,
+        meta: { title: '编辑合作机构', activeMenu: '/admin/organization' }
+      },
+      {
+        path: 'detail/:id',
+        component: () => import('@/views/admin/organization/detail.vue'),
+        name: 'OrganizationDetail',
+        hidden: true,
+        meta: { title: '合作机构详情', activeMenu: '/admin/organization' }
+      }
+    ]
+  },
+  // 宠物信息管理模块
+  {
+    path: '/pet/info',
+    component: Layout,
+    meta: { title: '宠物信息档案', icon: 'people' },
+    children: [
+      {
+        path: '',
+        component: () => import('@/views/pet/info/index.vue'),
+        name: 'PetInfo',
+        meta: { title: '宠物信息管理' }
+      },
+      {
+        path: 'add',
+        component: () => import('@/views/pet/info/add.vue'),
+        name: 'PetInfoAdd',
+        hidden: true,
+        meta: { title: '添加宠物信息', activeMenu: '/pet/info' }
+      },
+      {
+        path: 'edit/:id',
+        component: () => import('@/views/pet/info/edit.vue'),
+        name: 'PetInfoEdit',
+        hidden: true,
+        meta: { title: '编辑宠物信息', activeMenu: '/pet/info' }
+      }
+    ]
+  },
+  // 救助信息管理模块
+  {
+    path: '/give/give',
+    component: Layout,
+    meta: { title: '流浪宝贝救助站', icon: 'star' },
+    children: [
+      {
+        path: '',
+        component: () => import('@/views/give/give/index.vue'),
+        name: 'RescueInfo',
+        meta: { title: '流浪宝贝救助站' }
+      },
+      {
+        path: 'add',
+        component: () => import('@/views/give/give/add.vue'),
+        name: 'RescueInfoAdd',
+        hidden: true,
+        meta: { title: '添加救助信息', activeMenu: '/give/give' }
+      },
+      {
+        path: 'edit/:id',
+        component: () => import('@/views/give/give/edit.vue'),
+        name: 'RescueInfoEdit',
+        hidden: true,
+        meta: { title: '编辑救助信息', activeMenu: '/give/give' }
+      },
+      {
+        path: 'detail/:id',
+        component: () => import('@/views/give/give/detail.vue'),
+        name: 'RescueInfoDetail',
+        hidden: true,
+        meta: { title: '救助信息详情', activeMenu: '/give/give' }
+      }
+    ]
+  },
+  // 投诉举报管理模块
+  {
+    path: '/complaint/report',
+    component: Layout,
+    meta: { title: '投诉举报管理', icon: 'bug' },
+    children: [
+      {
+        path: '',
+        component: () => import('@/views/complaintreport/complaintreport/index.vue'),
+        name: 'ComplaintReport',
+        meta: { title: '投诉举报管理' }
+      },
+      {
+        path: 'add',
+        component: () => import('@/views/complaintreport/complaintreport/index.vue'),
+        name: 'ComplaintReportAdd',
+        hidden: true,
+        meta: { title: '添加投诉举报', activeMenu: '/complaint/report' }
+      },
+      {
+        path: 'edit/:id',
+        component: () => import('@/views/complaintreport/complaintreport/index.vue'),
+        name: 'ComplaintReportEdit',
+        hidden: true,
+        meta: { title: '编辑投诉举报', activeMenu: '/complaint/report' }
+      }
+    ]
+  },
+  // 独立公告模块
+  {
+    path: '/notice/info',
+    component: Layout,
+    meta: { title: '公告信息管理', icon: 'documentation' },
+    children: [
+      {
+        path: '',
+        component: () => import('@/views/noticeinfo/noticeinfo/index.vue'),
+        name: 'NoticeInfo',
+        meta: { title: '公告信息管理' }
+      },
+      {
+        path: 'add',
+        component: () => import('@/views/noticeinfo/noticeinfo/index.vue'),
+        name: 'NoticeInfoAdd',
+        hidden: true,
+        meta: { title: '添加公告信息', activeMenu: '/notice/info' }
+      },
+      {
+        path: 'edit/:id',
+        component: () => import('@/views/noticeinfo/noticeinfo/index.vue'),
+        name: 'NoticeInfoEdit',
+        hidden: true,
+        meta: { title: '编辑公告信息', activeMenu: '/notice/info' }
+      }
+    ]
+  },
+  //   component: Layout,
+  //   meta: { title: '系统管理', icon: 'system' },
+  //   children: [
+  //     {
+  //       path: 'user',
+  //       component: () => import('@/views/system/user/index.vue'),
+  //       name: 'User',
+  //       meta: { title: '用户管理' }
+  //     },
+  //     {
+  //       path: 'role',
+  //       component: () => import('@/views/system/role/index.vue'),
+  //       name: 'Role',
+  //       meta: { title: '角色管理' }
+  //     },
+  //     {
+  //       path: 'menu',
+  //       component: () => import('@/views/system/menu/index.vue'),
+  //       name: 'Menu',
+  //       meta: { title: '菜单管理' }
+  //     },
+  //     {
+  //       path: 'dept',
+  //       component: () => import('@/views/system/dept/index.vue'),
+  //       name: 'Dept',
+  //       meta: { title: '部门管理' }
+  //     },
+  //     {
+  //       path: 'post',
+  //       component: () => import('@/views/system/post/index.vue'),
+  //       name: 'Post',
+  //       meta: { title: '岗位管理' }
+  //     },
+  //     {
+  //       path: 'dict',
+  //       component: () => import('@/views/system/dict/index.vue'),
+  //       name: 'Dict',
+  //       meta: { title: '字典管理' }
+  //     },
+  //     {
+  //       path: 'config',
+  //       component: () => import('@/views/system/config/index.vue'),
+  //       name: 'Config',
+  //       meta: { title: '参数设置' }
+  //     }
+
+  //   ]
+  // },
+  // 监控中心模块
+  // {
+  //   path: '/monitor',
+  //   component: Layout,
+  //   meta: { title: '监控中心', icon: 'monitor' },
+  //   children: [
+  //     {
+  //       path: 'online',
+  //       component: () => import('@/views/monitor/online/index.vue'),
+  //       name: 'Online',
+  //       meta: { title: '在线用户' }
+  //     },
+  //     {
+  //       path: 'logininfor',
+  //       component: () => import('@/views/monitor/logininfor/index.vue'),
+  //       name: 'Logininfor',
+  //       meta: { title: '登录日志' }
+  //     },
+  //     {
+  //       path: 'operlog',
+  //       component: () => import('@/views/monitor/operlog/index.vue'),
+  //       name: 'Operlog',
+  //       meta: { title: '操作日志' }
+  //     },
+  //     {
+  //       path: 'job',
+  //       component: () => import('@/views/monitor/job/index.vue'),
+  //       name: 'Job',
+  //       meta: { title: '定时任务' }
+  //     },
+  //     {
+  //       path: 'server',
+  //       component: () => import('@/views/monitor/server/index.vue'),
+  //       name: 'Server',
+  //       meta: { title: '服务监控' }
+  //     },
+  //     {
+  //       path: 'cache',
+  //       component: () => import('@/views/monitor/cache/index.vue'),
+  //       name: 'Cache',
+  //       meta: { title: '缓存监控' }
+  //     }
+  //   ]
+  // }
 ]
 
 // 动态路由，基于用户权限动态去加载
@@ -272,20 +591,6 @@ export const dynamicRoutes = [
         component: () => import('@/views/monitor/job/log'),
         name: 'JobLog',
         meta: { title: '调度日志', activeMenu: '/monitor/job' }
-      }
-    ]
-  },
-  {
-    path: '/tool/gen-edit',
-    component: Layout,
-    hidden: true,
-    permissions: ['tool:gen:edit'],
-    children: [
-      {
-        path: 'index/:tableId(\\d+)',
-        component: () => import('@/views/tool/gen/editTable'),
-        name: 'GenEdit',
-        meta: { title: '修改生成配置', activeMenu: '/tool/gen' }
       }
     ]
   }

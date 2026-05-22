@@ -9,6 +9,18 @@ export function getOrganizationList(params) {
   })
 }
 
+// 添加合作机构
+export function addOrganization(data) {
+  if (!data) {
+    return Promise.reject(new Error('缺少机构数据'))
+  }
+  return request({
+    url: '/admin/organization',
+    method: 'post',
+    data
+  })
+}
+
 // 获取合作机构详情
 export function getOrganizationDetail(id) {
   if (!id) {
@@ -39,9 +51,6 @@ export function approveOrganization(id, data) {
   return request({
     url: `/admin/organization/${id}/approve`,
     method: 'put',
-    params: {
-      orgId: id
-    },
     data
   })
 }
@@ -53,10 +62,7 @@ export function deleteOrganization(id) {
   }
   return request({
     url: `/admin/organization/${id}`,
-    method: 'delete',
-    params: {
-      orgId: id
-    }
+    method: 'delete'
   })
 }
 
@@ -68,9 +74,6 @@ export function updateOrganization(data) {
   return request({
     url: `/admin/organization/${data.id}`,
     method: 'put',
-    params: {
-      orgId: data.id
-    },
     data
   })
 }

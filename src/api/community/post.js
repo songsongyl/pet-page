@@ -3,7 +3,7 @@ import request from '@/utils/request'
 // 发布帖子
 export function publishPost(data) {
   return request({
-    url: '/community/post/publish',
+    url: '/community/post',
     method: 'post',
     data
   })
@@ -26,6 +26,15 @@ export function getPostDetail(id) {
   })
 }
 
+// 更新帖子
+export function updatePost(data) {
+  return request({
+    url: '/community/post',
+    method: 'put',
+    data
+  })
+}
+
 // 点赞帖子
 export function likePost(id) {
   return request({
@@ -38,7 +47,7 @@ export function likePost(id) {
 export function commentPost(id, data) {
   return request({
     url: `/community/post/${id}/comment`,
-    method: 'post',
+    method: 'put',
     data
   })
 }
@@ -64,7 +73,15 @@ export function deletePost(id) {
 export function collectPost(id) {
   return request({
     url: `/community/post/${id}/collect`,
-    method: 'post'
+    method: 'put'
+  })
+}
+
+// 更新帖子浏览次数
+export function addPostViewCount(id) {
+  return request({
+    url: `/community/post/${id}/view`,
+    method: 'put'
   })
 }
 

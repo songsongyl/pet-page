@@ -144,7 +144,7 @@ const loadDetail = async () => {
 }
 
 const goBack = () => {
-  router.push('/adoption/list')
+  router.push('/adoption/admin/approval')
 }
 
 const downloadAgreement = () => {

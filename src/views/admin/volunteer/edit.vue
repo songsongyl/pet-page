@@ -1,8 +1,8 @@
 <template>
   <div class="admin-volunteer-edit tech-page tech-grid-bg">
     <div class="tech-title">
-      <span class="tech-gradient-text">编辑志愿者</span>
-      <span class="tech-subtitle">修改志愿者信息</span>
+      <!-- <span class="tech-gradient-text">编辑志愿者</span> -->
+      <!-- <span class="tech-subtitle">修改志愿者信息</span> -->
     </div>
 
     <el-card shadow="hover" class="tech-card">
@@ -50,9 +50,9 @@
 
         <el-form-item label="状态" prop="status">
           <el-select v-model="form.status" placeholder="请选择状态" class="tech-select">
-            <el-option label="待审核" value="pending" />
-            <el-option label="已通过" value="approved" />
-            <el-option label="已拒绝" value="rejected" />
+            <el-option label="待审核" :value="0" />
+            <el-option label="已通过" :value="1" />
+            <el-option label="已拒绝" :value="2" />
           </el-select>
         </el-form-item>
 

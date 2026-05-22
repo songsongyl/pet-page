@@ -29,6 +29,16 @@ service.interceptors.request.use(config => {
   if (getToken() && !isToken) {
     config.headers['Authorization'] = 'Bearer ' + getToken() // 让每个请求携带自定义token 请根据实际情况自行修改
   }
+  
+  // 调试：打印发送的数据
+  if (config.method === 'post' && config.data) {
+    console.log('=== 请求调试 ===')
+    console.log('URL:', config.url)
+    console.log('发送的数据:', config.data)
+    console.log('数据类型:', typeof config.data)
+    console.log('数据JSON:', JSON.stringify(config.data))
+    console.log('===============')
+  }
   // get请求映射params参数
   if (config.method === 'get' && config.params) {
     let url = config.url + '?' + tansParams(config.params);

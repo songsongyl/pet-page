@@ -3,7 +3,7 @@
     <el-card shadow="hover">
       <template #header>
         <div class="card-header">
-          <span>物资捐赠详情</span>
+          <span>物品捐赠详情</span>
           <el-button type="primary" @click="goBack">返回列表</el-button>
         </div>
       </template>

@@ -4,6 +4,7 @@ import { getRouters } from '@/api/menu'
 import Layout from '@/layout/index'
 import ParentView from '@/components/ParentView'
 import InnerLink from '@/layout/components/InnerLink'
+import useUserStore from '@/store/modules/user'
 
 // 匹配views里面所有的.vue文件
 const modules = import.meta.glob('./../../views/**/*.vue')
@@ -30,7 +31,12 @@ const usePermissionStore = defineStore(
         this.topbarRouters = routes
       },
       setSidebarRouters(routes) {
-        this.sidebarRouters = routes
+        const sortedRoutes = routes.sort((a, b) => {
+          if (a.meta && a.meta.title === '系统管理') return 1
+          if (b.meta && b.meta.title === '系统管理') return -1
+          return 0
+        })
+        this.sidebarRouters = sortedRoutes
       },
       generateRoutes(roles) {
         return new Promise(resolve => {
@@ -46,8 +52,10 @@ const usePermissionStore = defineStore(
             const asyncRoutes = filterDynamicRoutes(dynamicRoutes)
             asyncRoutes.forEach(route => { router.addRoute(route) })
             this.setRoutes(rewriteRoutes)
-            this.setSidebarRouters(constantRoutes.concat(sidebarRoutes))
-            this.setDefaultRoutes(sidebarRoutes)
+            // 合并常量路由和动态路由，确保侧边栏显示完整菜单
+            const allSidebarRoutes = constantRoutes.concat(sidebarRoutes)
+            this.setSidebarRouters(allSidebarRoutes)
+            this.setDefaultRoutes(defaultRoutes)
             this.setTopbarRoutes(defaultRoutes)
             resolve(rewriteRoutes)
           })
@@ -59,6 +67,10 @@ const usePermissionStore = defineStore(
 // 遍历后台传来的路由字符串，转换为组件对象
 function filterAsyncRouter(asyncRouterMap, lastRouter = false, type = false) {
   return asyncRouterMap.filter(route => {
+    // 过滤掉系统工具相关的路由
+    if (route.meta && route.meta.title === '系统工具') {
+      return false
+    }
     if (type && route.children) {
       route.children = filterChildren(route.children)
     }
@@ -115,8 +127,13 @@ function filterChildren(childrenMap, lastRouter = false) {
 // 动态路由遍历，验证是否具备权限
 export function filterDynamicRoutes(routes) {
   const res = []
+  const userStore = useUserStore()
+
   routes.forEach(route => {
-    if (route.permissions) {
+    // 管理员可以访问所有路由（roleId === 1 为管理员）
+    if (userStore.roleId === 1) {
+      res.push(route)
+    } else if (route.permissions) {
       if (auth.hasPermiOr(route.permissions)) {
         res.push(route)
       }

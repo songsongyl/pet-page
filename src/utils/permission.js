@@ -26,6 +26,16 @@ export function checkPermi(value) {
 }
 
 /**
+ * 判断是否为管理员
+ * 管理员 roleId = 1，普通用户 roleId = 100
+ * @returns {Boolean}
+ */
+export function isAdmin() {
+  const roleId = useUserStore().roleId
+  return roleId === 1
+}
+
+/**
  * 角色权限校验
  * @param {Array} value 校验值
  * @returns {Boolean}
@@ -35,6 +45,11 @@ export function checkRole(value) {
     const roles = useUserStore().roles
     const permissionRoles = value
     const super_admin = "admin";
+
+    // 管理员直接通过
+    if (isAdmin()) {
+      return true
+    }
 
     const hasRole = roles.some(role => {
       return super_admin === role || permissionRoles.includes(role)
