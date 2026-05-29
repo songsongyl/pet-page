@@ -554,8 +554,8 @@ const resetForm = () => {
 
 .add-item-wrapper {
   display: flex;
-  justify-content: center;
-  margin-top: 16px;
+  justify-content: flex-start;
+  margin-bottom: 16px;
 
   .add-btn {
     background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%);

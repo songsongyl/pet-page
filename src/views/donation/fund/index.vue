@@ -462,13 +462,15 @@ onMounted(() => {
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 20px;
   margin-bottom: 24px;
   width: 100%;
 }
 
 .stat-card {
+  width: 100%;
+
   :deep(.el-card) {
     border: none;
     border-radius: 16px;
@@ -476,6 +478,9 @@ onMounted(() => {
     background: linear-gradient(145deg, #ffffff 0%, #fef9f3 100%);
     overflow: hidden;
     transition: all 0.3s ease;
+    height: 100%;
+    box-sizing: border-box;
+    width: 100%;
 
     &:hover {
       transform: translateY(-4px);
@@ -483,20 +488,23 @@ onMounted(() => {
     }
 
     .el-card__body {
-      padding: 24px;
+      padding: clamp(12px, 2vw, 20px);
+      height: 100%;
+      box-sizing: border-box;
     }
   }
 
   .stat-content {
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: clamp(8px, 2vw, 16px);
+    height: 100%;
   }
 
   .stat-icon {
-    width: 64px;
-    height: 64px;
-    border-radius: 16px;
+    width: clamp(40px, 8vw, 56px);
+    height: clamp(40px, 8vw, 56px);
+    border-radius: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -543,23 +551,25 @@ onMounted(() => {
     }
 
     .el-icon {
-      font-size: 32px;
+      font-size: clamp(24px, 4vw, 32px);
     }
   }
 
   .stat-info {
     flex: 1;
+    min-width: 0;
 
     .stat-value {
-      font-size: 32px;
+      font-size: clamp(20px, 4vw, 32px);
       font-weight: 700;
       color: #1a1a2e;
       margin-bottom: 6px;
       letter-spacing: -1px;
+      word-break: break-word;
     }
 
     .stat-label {
-      font-size: 14px;
+      font-size: clamp(12px, 1.5vw, 14px);
       color: #8c8c8c;
       font-weight: 500;
     }
@@ -751,11 +761,18 @@ onMounted(() => {
   }
 
   .stats-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
   }
 
   .form-section {
     padding: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
   }
 }
 </style>
