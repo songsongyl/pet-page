@@ -249,10 +249,16 @@
           <div v-if="recommendResults.length > 0" class="recommend-results">
             <div class="recommend-header">
               <span>为您找到 {{ recommendResults.length }} 只匹配宠物</span>
+              <el-button v-if="recommendResults.length > 4" text @click="toggleShowAll" class="expand-btn">
+                {{ showAll ? '收起' : '展开全部' }}
+                <el-icon>
+                  <ArrowDown v-if="!showAll" />
+                  <ArrowUp v-else />
+                </el-icon>
+              </el-button>
             </div>
-            <div class="recommend-list">
-              <div v-for="pet in recommendResults" :key="pet.petId" class="recommend-item"
-                @click="handleSelectPet(pet)">
+            <div class="recommend-list" :class="{ 'show-all': showAll }">
+              <div v-for="pet in displayPets" :key="pet.petId" class="recommend-item" @click="handleSelectPet(pet)">
                 <div class="pet-info">
                   <div class="pet-name">{{ pet.petName || pet.name }}</div>
                   <div class="pet-detail">
@@ -432,7 +438,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useRouter, useRoute } from 'vue-router'
 import { submitAdoptionApplication, downloadAgreementTemplate, downloadAgreementTemplateMock, recommendPets } from '@/api/adoption/application'
@@ -453,7 +459,9 @@ import {
   DocumentChecked,
   Download,
   Upload,
-  Search
+  Search,
+  ArrowDown,
+  ArrowUp
 } from '@element-plus/icons-vue'
 
 const router = useRouter()
@@ -497,10 +505,26 @@ const recommendForm = reactive({
 const recommendResults = ref([])
 const recommendLoading = ref(false)
 const hasSearched = ref(false)
+const showAll = ref(false)
+
+const displayPets = computed(() => {
+  console.log('displayPets recalc:', { showAll: showAll.value, total: recommendResults.value.length })
+  if (showAll.value || recommendResults.value.length <= 4) {
+    return recommendResults.value
+  }
+  return recommendResults.value.slice(0, 4)
+})
+
+const toggleShowAll = () => {
+  console.log('toggleShowAll before:', showAll.value)
+  showAll.value = !showAll.value
+  console.log('toggleShowAll after:', showAll.value)
+}
 
 const handleRecommend = async () => {
   recommendLoading.value = true
   hasSearched.value = true
+  showAll.value = false
   try {
     const params = {}
     if (recommendForm.preferPetType) params.preferPetType = recommendForm.preferPetType
@@ -797,11 +821,35 @@ const downloadAgreement = async () => {
     border-bottom: 1px solid var(--tech-border);
     font-size: 14px;
     color: var(--tech-text-secondary);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .expand-btn {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 13px;
+      color: var(--tech-primary);
+
+      &:hover {
+        color: #7c3aed;
+      }
+
+      .el-icon {
+        font-size: 14px;
+      }
+    }
   }
 
   .recommend-list {
     max-height: 400px;
     overflow-y: auto;
+
+    &.show-all {
+      max-height: none;
+      overflow-y: visible;
+    }
   }
 
   .recommend-item {
