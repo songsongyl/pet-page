@@ -167,6 +167,118 @@
           </el-form-item>
         </div>
 
+        <!-- 智能推荐区域 -->
+        <el-divider content-position="left" class="tech-divider">
+          <span class="divider-content">
+            <el-icon>
+              <UserFilled />
+            </el-icon>
+            智能推荐宠物
+          </span>
+        </el-divider>
+
+        <div class="form-section">
+          <div class="recommend-tips">
+            <p>填写您的偏好，系统将为您推荐最合适的宠物</p>
+          </div>
+
+          <div class="recommend-form">
+            <div class="form-row">
+              <div class="form-item">
+                <label>宠物类型</label>
+                <el-select v-model="recommendForm.preferPetType" placeholder="不限" clearable class="tech-select">
+                  <el-option label="不限" :value="null" />
+                  <el-option label="猫" :value="1" />
+                  <el-option label="狗" :value="2" />
+                  <el-option label="兔子" :value="3" />
+                  <el-option label="仓鼠" :value="4" />
+                  <el-option label="鸟类" :value="5" />
+                  <el-option label="其他" :value="6" />
+                </el-select>
+              </div>
+              <div class="form-item">
+                <label>品种</label>
+                <el-input v-model="recommendForm.preferBreed" placeholder="如：金毛" clearable class="tech-input"
+                  style="width: 120px;" />
+              </div>
+              <div class="form-item">
+                <label>性别</label>
+                <el-select v-model="recommendForm.preferGender" placeholder="不限" clearable class="tech-select">
+                  <el-option label="不限" :value="null" />
+                  <el-option label="公" :value="1" />
+                  <el-option label="母" :value="0" />
+                </el-select>
+              </div>
+              <div class="form-item">
+                <label>年龄</label>
+                <el-select v-model="recommendForm.preferAge" placeholder="不限" clearable class="tech-select">
+                  <el-option label="不限" :value="0" />
+                  <el-option label="幼年" :value="1" />
+                  <el-option label="成年" :value="2" />
+                  <el-option label="老年" :value="3" />
+                </el-select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-item">
+                <label>健康状态</label>
+                <el-select v-model="recommendForm.preferHealthStatus" placeholder="不限" clearable class="tech-select">
+                  <el-option label="不限" :value="null" />
+                  <el-option label="健康" :value="1" />
+                  <el-option label="需治疗" :value="2" />
+                </el-select>
+              </div>
+              <div class="form-item">
+                <label>位置</label>
+                <el-input v-model="recommendForm.preferLocation" placeholder="如：成都市" clearable class="tech-input"
+                  style="width: 120px;" />
+              </div>
+              <div class="form-item">
+                <el-button type="primary" @click="handleRecommend" :loading="recommendLoading"
+                  class="tech-btn recommend-btn">
+                  <el-icon v-if="!recommendLoading">
+                    <Search />
+                  </el-icon>
+                  {{ recommendLoading ? '推荐中...' : '立即推荐' }}
+                </el-button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 推荐结果展示 -->
+          <div v-if="recommendResults.length > 0" class="recommend-results">
+            <div class="recommend-header">
+              <span>为您找到 {{ recommendResults.length }} 只匹配宠物</span>
+            </div>
+            <div class="recommend-list">
+              <div v-for="pet in recommendResults" :key="pet.petId" class="recommend-item"
+                @click="handleSelectPet(pet)">
+                <div class="pet-info">
+                  <div class="pet-name">{{ pet.petName || pet.name }}</div>
+                  <div class="pet-detail">
+                    {{ getPetTypeText(pet.petType) }} | {{ pet.breed || '未知品种' }} |
+                    {{ pet.gender === 1 ? '公' : '母' }} | {{ pet.age || 0 }}岁
+                  </div>
+                  <div class="pet-location" v-if="pet.location">
+                    <el-icon>
+                      <Location />
+                    </el-icon> {{ pet.location }}
+                  </div>
+                </div>
+                <div class="match-info">
+                  <div class="match-score" :class="getMatchClass(pet.matchScore)">
+                    {{ Math.round(pet.matchScore) }}
+                  </div>
+                  <div class="match-tag">{{ pet.matchTag }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div v-else-if="hasSearched" class="no-results">
+            <el-empty description="暂无符合条件的宠物" />
+          </div>
+        </div>
+
         <!-- 领养宠物信息 -->
         <el-divider content-position="left" class="tech-divider">
           <span class="divider-content">
@@ -323,7 +435,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useRouter, useRoute } from 'vue-router'
-import { submitAdoptionApplication, downloadAgreementTemplate, downloadAgreementTemplateMock } from '@/api/adoption/application'
+import { submitAdoptionApplication, downloadAgreementTemplate, downloadAgreementTemplateMock, recommendPets } from '@/api/adoption/application'
 import { listInfo } from '@/api/pet/info'
 import {
   Document,
@@ -340,7 +452,8 @@ import {
   RefreshRight,
   DocumentChecked,
   Download,
-  Upload
+  Upload,
+  Search
 } from '@element-plus/icons-vue'
 
 const router = useRouter()
@@ -372,6 +485,66 @@ const form = reactive({
 
 const petList = ref([])
 
+const recommendForm = reactive({
+  preferPetType: null,
+  preferBreed: '',
+  preferGender: null,
+  preferAge: 0,
+  preferHealthStatus: null,
+  preferLocation: ''
+})
+
+const recommendResults = ref([])
+const recommendLoading = ref(false)
+const hasSearched = ref(false)
+
+const handleRecommend = async () => {
+  recommendLoading.value = true
+  hasSearched.value = true
+  try {
+    const params = {}
+    if (recommendForm.preferPetType) params.preferPetType = recommendForm.preferPetType
+    if (recommendForm.preferBreed) params.preferBreed = recommendForm.preferBreed
+    if (recommendForm.preferGender !== null) params.preferGender = recommendForm.preferGender
+    if (recommendForm.preferAge) params.preferAge = recommendForm.preferAge
+    if (recommendForm.preferHealthStatus) params.preferHealthStatus = recommendForm.preferHealthStatus
+    if (recommendForm.preferLocation) params.preferLocation = recommendForm.preferLocation
+
+    const response = await recommendPets(params)
+    recommendResults.value = response.data || []
+  } catch (error) {
+    ElMessage.error('获取推荐失败')
+    recommendResults.value = []
+  } finally {
+    recommendLoading.value = false
+  }
+}
+
+const getPetTypeText = (type) => {
+  const typeMap = { 1: '猫', 2: '狗', 3: '兔子', 4: '仓鼠', 5: '鸟类', 6: '其他' }
+  return typeMap[type] || '未知'
+}
+
+const getMatchClass = (score) => {
+  if (score >= 90) return 'perfect'
+  if (score >= 75) return 'high'
+  if (score >= 60) return 'good'
+  if (score >= 40) return 'normal'
+  return 'low'
+}
+
+const handleSelectPet = (pet) => {
+  const petId = pet.petId || pet.id
+  if (!petId) {
+    ElMessage.warning('无法获取宠物ID')
+    return
+  }
+  form.petId = petId
+  form.releaseId = petId
+  ElMessage.success(`已选择宠物：${pet.petName || pet.name}`)
+  window.scrollTo({ top: 600, behavior: 'smooth' })
+}
+
 const loadPetList = async () => {
   try {
     const response = await listInfo({})
@@ -391,10 +564,6 @@ const loadPetList = async () => {
 
 const handlePetSelect = (petId) => {
   form.petId = parseInt(petId)
-  const selectedPet = petList.value.find(pet => (pet.petId || pet.id) == petId)
-  if (selectedPet && selectedPet.releaseId) {
-    form.releaseId = selectedPet.releaseId
-  }
 }
 
 onMounted(() => {
@@ -553,6 +722,179 @@ const downloadAgreement = async () => {
 
 .form-section {
   padding: 0 16px;
+}
+
+.recommend-tips {
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(124, 58, 237, 0.1) 100%);
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+
+  p {
+    margin: 0;
+    color: var(--tech-text-secondary);
+    font-size: 14px;
+  }
+}
+
+.recommend-form {
+  margin-bottom: 20px;
+
+  .form-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 12px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  .form-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    label {
+      font-size: 14px;
+      color: var(--tech-text-secondary);
+      white-space: nowrap;
+    }
+  }
+
+  .recommend-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 20px;
+    background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-weight: 500;
+
+    &:hover {
+      box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+    }
+
+    .el-icon {
+      font-size: 16px;
+    }
+  }
+}
+
+.recommend-results {
+  margin-top: 20px;
+  border: 1px solid var(--tech-border);
+  border-radius: 12px;
+  overflow: hidden;
+
+  .recommend-header {
+    background: var(--tech-bg-light);
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--tech-border);
+    font-size: 14px;
+    color: var(--tech-text-secondary);
+  }
+
+  .recommend-list {
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  .recommend-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    border-bottom: 1px solid var(--tech-border);
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &:hover {
+      background: var(--tech-bg-hover);
+    }
+
+    .pet-info {
+      flex: 1;
+
+      .pet-name {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--tech-text-primary);
+        margin-bottom: 4px;
+      }
+
+      .pet-detail {
+        font-size: 13px;
+        color: var(--tech-text-muted);
+        margin-bottom: 4px;
+      }
+
+      .pet-location {
+        font-size: 12px;
+        color: var(--tech-text-muted);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+    }
+
+    .match-info {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-left: 16px;
+
+      .match-score {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        font-weight: 700;
+        color: #fff;
+
+        &.perfect {
+          background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%);
+        }
+
+        &.high {
+          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        &.good {
+          background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+
+        &.normal {
+          background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+        }
+
+        &.low {
+          background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+      }
+
+      .match-tag {
+        font-size: 12px;
+        color: var(--tech-text-muted);
+        margin-top: 4px;
+      }
+    }
+  }
+}
+
+.no-results {
+  padding: 40px 0;
 }
 
 .tech-form {

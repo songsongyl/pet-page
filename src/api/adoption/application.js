@@ -21,7 +21,6 @@ export function downloadAgreementTemplate() {
 // Mock下载领养协议模板（用于演示，实际部署时移除）
 export function downloadAgreementTemplateMock() {
   return new Promise((resolve) => {
-    // 创建一个简单的PDF内容
     const pdfContent = `%PDF-1.4
 1 0 obj
 <<
@@ -45,10 +44,10 @@ endobj
 endobj
 xref
 0 4
-0000000000 65535 f 
-0000000009 00000 n 
-0000000058 00000 n 
-0000000115 00000 n 
+0000000000 65535 f
+0000000009 00000 n
+0000000058 00000 n
+0000000115 00000 n
 trailer
 <<
 /Size 4
@@ -109,5 +108,14 @@ export function batchApproveAdoption(data) {
     url: '/adoption/application/admin/batch-approve',
     method: 'post',
     data
+  })
+}
+
+// 根据用户偏好推荐宠物
+export function recommendPets(params) {
+  return request({
+    url: '/adoption/application/recommend',
+    method: 'get',
+    params
   })
 }
