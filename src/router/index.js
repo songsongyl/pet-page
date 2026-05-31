@@ -394,23 +394,30 @@ export const constantRoutes = [
     children: [
       {
         path: '',
-        component: () => import('@/views/complaintreport/complaintreport/index.vue'),
+        component: () => import('@/views/complaintreport/ComplaintReport/index.vue'),
         name: 'ComplaintReport',
         meta: { title: '投诉举报管理' }
       },
       {
         path: 'add',
-        component: () => import('@/views/complaintreport/complaintreport/index.vue'),
+        component: () => import('@/views/complaintreport/ComplaintReport/index.vue'),
         name: 'ComplaintReportAdd',
         hidden: true,
         meta: { title: '添加投诉举报', activeMenu: '/complaint/report' }
       },
       {
         path: 'edit/:id',
-        component: () => import('@/views/complaintreport/complaintreport/index.vue'),
+        component: () => import('@/views/complaintreport/ComplaintReport/index.vue'),
         name: 'ComplaintReportEdit',
         hidden: true,
         meta: { title: '编辑投诉举报', activeMenu: '/complaint/report' }
+      },
+
+      {
+        path: 'blacklist',
+        component: () => import('@/views/complaintreport/blacklist/index.vue'),
+        name: 'Blacklist',
+        meta: { title: '黑名单管理', roles: ['admin'] }
       }
     ]
   },

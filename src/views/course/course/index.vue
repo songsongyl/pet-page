@@ -109,7 +109,7 @@
       </template>
 
       <el-table v-loading="loading" :data="courseList" @selection-change="handleSelectionChange" class="tech-table"
-        stripe>
+        stripe style="width: 100%" ref="tableRef" :row-key="row => row.courseId">
         <el-table-column type="selection" width="55" align="center" />
         <el-table-column label="课程ID" align="center" prop="courseId" width="80" />
         <el-table-column label="封面" align="center" width="100">
@@ -332,10 +332,11 @@ const loading = ref(true)
 const showSearch = ref(true)
 const ids = ref([])
 const single = ref(true)
-const multiple = ref(true)
+const multiple = ref(false)
 const total = ref(0)
 const title = ref("")
 const courseRef = ref()
+const tableRef = ref()
 
 const data = reactive({
   form: {},
@@ -376,6 +377,7 @@ const { queryParams, form, rules } = toRefs(data)
 function getList() {
   loading.value = true
   listCourse(queryParams.value).then(response => {
+    console.log('Response data:', response)
     courseList.value = response.rows
     total.value = response.total
     loading.value = false
@@ -435,9 +437,11 @@ function resetQuery() {
 }
 
 function handleSelectionChange(selection) {
+  console.log('handleSelectionChange called:', selection)
   ids.value = selection.map(item => item.courseId)
   single.value = selection.length != 1
   multiple.value = !selection.length
+  console.log('ids:', ids.value)
 }
 
 function handleAdd() {
@@ -916,6 +920,7 @@ getList()
         color: #333333;
         padding: 12px 0;
         font-size: 13px;
+        pointer-events: auto !important;
       }
     }
   }
@@ -928,6 +933,7 @@ getList()
       border-color: #007bff;
     }
   }
+ 
 }
 
 .course-cover {

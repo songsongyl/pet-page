@@ -118,7 +118,7 @@
       </template>
 
       <el-table v-loading="loading" :data="ComplaintReportList" @selection-change="handleSelectionChange"
-        class="tech-table" stripe>
+        class="tech-table" stripe style="width: 100%" ref="tableRef" :row-key="(row, index) => index">
         <el-table-column type="selection" width="55" align="center" />
         <el-table-column label="ID" align="center" prop="complaintId" width="80" />
         <el-table-column label="举报人ID" align="center" prop="reportUserId" width="100" />
@@ -322,7 +322,7 @@
 
     <!-- 审批对话框 -->
     <el-dialog v-model="approveDialogVisible" title="投诉审核" width="500px" class="tech-dialog">
-      <el-form :model="data.approveForm" :rules="approveRules" ref="approveFormRef" label-width="100px">
+      <el-form :model="data.approveForm" :rules="approveRules" ref="approveFormRef" label-width="110px">
         <el-form-item label="审核结果" prop="result">
           <el-radio-group v-model="data.approveForm.result">
             <el-radio label="approved">通过</el-radio>
@@ -330,7 +330,17 @@
           </el-radio-group>
         </el-form-item>
         <el-form-item label="处理结果" prop="remark">
-          <el-input type="textarea" v-model="data.approveForm.remark" placeholder="请输入处理结果" :rows="4" />
+          <el-input type="textarea" v-model="data.approveForm.remark" placeholder="请输入处理结果" :rows="3" />
+        </el-form-item>
+        <el-form-item label="加入黑名单">
+          <el-switch v-model="data.approveForm.addToBlacklist" active-text="是" inactive-text="否" />
+        </el-form-item>
+        <el-form-item label="拉黑原因" v-if="data.approveForm.addToBlacklist">
+          <el-input type="textarea" v-model="data.approveForm.blacklistReason" placeholder="默认使用处理结果" :rows="2" />
+        </el-form-item>
+        <el-form-item label="解封时间" v-if="data.approveForm.addToBlacklist">
+          <el-date-picker v-model="data.approveForm.unblockTime" type="datetime" placeholder="不填则永久拉黑"
+            value-format="YYYY-MM-DD HH:mm:ss" style="width: 100%" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -345,6 +355,7 @@
 
 <script setup name="ComplaintReport">
 import { listComplaintReport, getComplaintReport, delComplaintReport, addComplaintReport, updateComplaintReport } from "@/api/ComplaintReport/ComplaintReport"
+import { addBlacklist, checkUserInBlacklist, getUserInfo } from "@/api/ComplaintReport/blacklist"
 import useUserStore from "@/store/modules/user"
 import { ref, reactive, toRefs } from 'vue'
 import Editor from "@/components/Editor/index.vue"
@@ -379,7 +390,12 @@ const data = reactive({
   approveForm: {
     complaintId: null,
     result: null,
-    remark: ''
+    remark: '',
+    addToBlacklist: false,
+    blacklistReason: '',
+    unblockTime: null,
+    targetId: null,
+    targetType: null
   },
   queryParams: {
     pageNum: 1,
@@ -670,10 +686,18 @@ function getHandleStatusColor(status) {
 
 /** 审核操作 */
 function handleApprove(complaintId) {
-  data.approveForm.complaintId = complaintId
-  data.approveForm.result = null
-  data.approveForm.remark = ''
-  approveDialogVisible.value = true
+  getComplaintReport(complaintId).then(response => {
+    const complaint = response.data
+    data.approveForm.complaintId = complaintId
+    data.approveForm.result = null
+    data.approveForm.remark = ''
+    data.approveForm.addToBlacklist = false
+    data.approveForm.blacklistReason = ''
+    data.approveForm.unblockTime = null
+    data.approveForm.targetId = complaint.targetId
+    data.approveForm.targetType = complaint.targetType
+    approveDialogVisible.value = true
+  })
 }
 
 /** 提交审批 */
@@ -691,11 +715,70 @@ function submitApprove() {
         handleTime: handleTime,
         handleRemark: data.approveForm.remark
       }).then(() => {
-        approveDialogVisible.value = false
-        getList()
-        ElMessage.success(handleStatus === 2 ? "审核通过成功" : "审核驳回成功")
+        // 如果选择了加入黑名单
+        if (data.approveForm.addToBlacklist && data.approveForm.targetId) {
+          handleAddToBlacklist()
+        } else {
+          approveDialogVisible.value = false
+          getList()
+          ElMessage.success(handleStatus === 2 ? "审核通过成功" : "审核驳回成功")
+        }
       }).catch(() => { })
     }
+  })
+}
+
+/** 加入黑名单 */
+function handleAddToBlacklist() {
+  checkUserInBlacklist(data.approveForm.targetId).then(res => {
+    if (res.data) {
+      ElMessage.warning('该用户已在黑名单中')
+      approveDialogVisible.value = false
+      getList()
+      return
+    }
+
+    getUserInfo(data.approveForm.targetId).then(userRes => {
+      const userData = userRes.data
+      const blacklistData = {
+        userId: data.approveForm.targetId,
+        userName: userData.userName || ('用户' + data.approveForm.targetId),
+        userNickName: userData.nickName || '',
+        reason: data.approveForm.blacklistReason || data.approveForm.remark || '因投诉被拉黑',
+        unblockTime: data.approveForm.unblockTime
+      }
+
+      addBlacklist(blacklistData).then(() => {
+        approveDialogVisible.value = false
+        getList()
+        ElMessage.success('审核成功，已将用户加入黑名单')
+      }).catch(() => {
+        approveDialogVisible.value = false
+        getList()
+        ElMessage.warning('审核成功，但加入黑名单失败')
+      })
+    }).catch(() => {
+      const blacklistData = {
+        userId: data.approveForm.targetId,
+        userName: '用户' + data.approveForm.targetId,
+        userNickName: '',
+        reason: data.approveForm.blacklistReason || data.approveForm.remark || '因投诉被拉黑',
+        unblockTime: data.approveForm.unblockTime
+      }
+
+      addBlacklist(blacklistData).then(() => {
+        approveDialogVisible.value = false
+        getList()
+        ElMessage.success('审核成功，已将用户加入黑名单')
+      }).catch(() => {
+        approveDialogVisible.value = false
+        getList()
+        ElMessage.warning('审核成功，但加入黑名单失败')
+      })
+    })
+  }).catch(() => {
+    approveDialogVisible.value = false
+    getList()
   })
 }
 
